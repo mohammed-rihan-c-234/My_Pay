@@ -1,0 +1,444 @@
+:root {
+  --bg: #f2efe8;
+  --panel: rgba(255, 255, 255, 0.56);
+  --panel-strong: rgba(255, 255, 255, 0.82);
+  --text: #181716;
+  --muted: #6b6259;
+  --line: rgba(24, 23, 22, 0.08);
+  --accent: #111111;
+  --shadow: 0 24px 60px rgba(48, 37, 27, 0.12);
+  --radius-xl: 32px;
+  --radius-lg: 24px;
+  --radius-md: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Manrope", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(255, 186, 127, 0.65), transparent 32%),
+    radial-gradient(circle at top right, rgba(90, 126, 255, 0.25), transparent 28%),
+    linear-gradient(160deg, #f8f3ea 0%, #eee7da 40%, #f7f4ef 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.65), transparent 85%);
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  padding: 24px;
+}
+
+.sidebar,
+.panel,
+.glass-card {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.sidebar {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.brand-block h1,
+.section-heading h2,
+.form-card h3,
+.list-heading h3 {
+  margin: 0;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.brand-copy,
+.section-copy,
+.wallet-note {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.tabs {
+  display: grid;
+  gap: 12px;
+}
+
+.tab-button,
+.primary-button,
+.ghost-button,
+input,
+select {
+  font: inherit;
+}
+
+.tab-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 18px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.tab-button.active {
+  background: #111111;
+  color: #ffffff;
+  transform: translateX(6px);
+}
+
+.quick-stats {
+  display: grid;
+  gap: 14px;
+}
+
+.stat-card,
+.glass-card,
+.panel {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: var(--shadow);
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+}
+
+.stat-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.content {
+  min-width: 0;
+}
+
+.panel {
+  display: none;
+  background: var(--panel);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+}
+
+.panel.active {
+  display: block;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.section-copy {
+  max-width: 360px;
+}
+
+.wallet-layout,
+.expenses-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+}
+
+.wallet-preview {
+  min-width: 0;
+}
+
+.card-stack {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.payment-card {
+  position: relative;
+  min-height: 220px;
+  border-radius: 28px;
+  padding: 26px;
+  overflow: hidden;
+  color: #ffffff;
+  box-shadow: 0 20px 50px rgba(16, 17, 20, 0.25);
+}
+
+.payment-card::before,
+.payment-card::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+.payment-card::before {
+  width: 180px;
+  height: 180px;
+  right: -32px;
+  top: -28px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.payment-card::after {
+  width: 120px;
+  height: 120px;
+  left: -20px;
+  bottom: -40px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.card-theme-sunset {
+  background: linear-gradient(135deg, #1f1322 0%, #8d3f39 45%, #f19f5c 100%);
+}
+
+.card-theme-midnight {
+  background: linear-gradient(135deg, #05070e 0%, #243b55 60%, #3d6b91 100%);
+}
+
+.card-theme-ocean {
+  background: linear-gradient(135deg, #062843 0%, #0ea5e9 55%, #8be1ff 100%);
+}
+
+.card-theme-forest {
+  background: linear-gradient(135deg, #102217 0%, #2c6e49 55%, #8fcf84 100%);
+}
+
+.card-top,
+.card-bottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-chip {
+  width: 46px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.35));
+}
+
+.card-brand {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.card-number {
+  position: relative;
+  z-index: 1;
+  margin: 42px 0 24px;
+  font-size: clamp(1.3rem, 2vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.card-meta span {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.78;
+  margin-bottom: 6px;
+}
+
+.form-card,
+.list-card {
+  background: var(--panel-strong);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+}
+
+.form-card {
+  display: grid;
+  gap: 16px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+input,
+select {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text);
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid rgba(17, 17, 17, 0.12);
+  border-color: rgba(17, 17, 17, 0.24);
+}
+
+.split-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.primary-button,
+.ghost-button {
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.primary-button {
+  padding: 14px 18px;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.ghost-button {
+  padding: 10px 14px;
+  background: rgba(17, 17, 17, 0.08);
+  color: var(--text);
+}
+
+.primary-button:hover,
+.ghost-button:hover {
+  transform: translateY(-1px);
+}
+
+.dashboard-column {
+  display: grid;
+  gap: 22px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.summary-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.summary-card h4,
+.summary-card p,
+.expense-item h4,
+.expense-item p {
+  margin: 0;
+}
+
+.summary-card h4 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.summary-card p {
+  color: var(--muted);
+}
+
+.list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.expense-list {
+  display: grid;
+  gap: 12px;
+}
+
+.expense-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.expense-item p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-top: 6px;
+}
+
+.expense-amount {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.empty-state {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
+}
+
+@media (max-width: 1080px) {
+  .app-shell,
+  .wallet-layout,
+  .expenses-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 16px;
+  }
+
+  .sidebar,
+  .panel {
+    padding: 20px;
+  }
+
+  .split-fields,
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

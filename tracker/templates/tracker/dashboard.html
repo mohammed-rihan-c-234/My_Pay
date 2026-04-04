@@ -1,0 +1,473 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ExpenseFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'tracker/styles.css' %}" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <p class="eyebrow">Personal finance</p>
+          <h1>ExpenseFlow</h1>
+          <p class="brand-copy">
+            Save your cards in a wallet-style view and track your spending by
+            category in one place.
+          </p>
+        </div>
+
+        <div class="account-card">
+          <span>Signed in as</span>
+          <strong>{{ request.user.username }}</strong>
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="logout-link">Log out</button>
+          </form>
+        </div>
+
+        <nav class="tabs" aria-label="Main sections">
+          <button class="tab-button {% if active_tab == 'wallet' %}active{% endif %}" data-tab="wallet" type="button">Wallet</button>
+          <button class="tab-button {% if active_tab == 'expenses' %}active{% endif %}" data-tab="expenses" type="button">Expenses</button>
+        </nav>
+
+        <section class="quick-stats">
+          <div class="stat-card">
+            <span>Total spent</span>
+            <strong>₹{{ total_spent|floatformat:2 }}</strong>
+          </div>
+          <div class="stat-card">
+            <span>Top category</span>
+            <strong>
+              {% if top_category %}
+                {{ top_category.category }} - ₹{{ top_category.total|floatformat:2 }}
+              {% else %}
+                No data yet
+              {% endif %}
+            </strong>
+          </div>
+          <div class="stat-card">
+            <span>Saved cards</span>
+            <strong>{{ saved_cards_count }} card{{ saved_cards_count|pluralize }}</strong>
+          </div>
+        </section>
+      </aside>
+
+      <main class="content">
+        {% if messages %}
+          <section class="message-stack">
+            {% for message in messages %}
+              <div class="flash-message">{{ message }}</div>
+            {% endfor %}
+          </section>
+        {% endif %}
+
+        <section class="panel {% if active_tab == 'wallet' %}active{% endif %}" id="walletPanel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Digital wallet</p>
+              <h2>Your Cards</h2>
+            </div>
+            <p class="section-copy">
+              Pick a bank and the card theme is matched automatically while only
+              the last 4 digits are shown on the wallet card.
+            </p>
+          </div>
+
+          <div class="wallet-layout">
+            <div class="wallet-preview">
+              <div class="card-stack">
+                {% for card in cards %}
+                  <div class="swipe-card" data-swipe-card>
+                    <div class="swipe-delete-zone">
+                      <form method="post" class="swipe-delete-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_card" />
+                        <input type="hidden" name="card_id" value="{{ card.id }}" />
+                        <button type="submit" class="card-delete-button">Delete</button>
+                      </form>
+                    </div>
+                    <article
+                      class="payment-card card-theme-{{ card.resolved_theme }}"
+                      data-card-surface
+                      data-card-id="{{ card.id }}"
+                      data-card-bank="{{ card.bank_name }}"
+                      data-card-holder="{{ card.holder_name }}"
+                      data-card-network="{{ card.card_network }}"
+                      data-card-last-four="{{ card.last_four }}"
+                      data-card-expiry="{{ card.expiry }}"
+                    >
+                      <div class="card-top">
+                        <div class="card-tech">
+                          <div class="card-chip" aria-hidden="true"></div>
+                          <a
+                            class="nfc-tag"
+                            href="https://pay.google.com/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Open Google Pay"
+                            title="Open Google Pay"
+                            data-nfc-link
+                          >
+                            <span class="nfc-wave nfc-wave-one"></span>
+                            <span class="nfc-wave nfc-wave-two"></span>
+                            <span class="nfc-wave nfc-wave-three"></span>
+                          </a>
+                        </div>
+                        <div class="card-brand">{{ card.card_network }}</div>
+                      </div>
+                      <div class="card-number">**** {{ card.last_four }}</div>
+                      <div class="card-bottom">
+                        <div class="card-meta">
+                          <span>Card Holder</span>
+                          <strong>{{ card.holder_name }}</strong>
+                        </div>
+                        <div class="card-meta">
+                          <span>Bank</span>
+                          <strong>{{ card.bank_name }}</strong>
+                        </div>
+                      </div>
+                      <div class="card-expiry">Exp {{ card.expiry }}</div>
+                    </article>
+                  </div>
+                {% empty %}
+                  <div class="empty-state">
+                    No cards saved yet. Add one to create your wallet stack.
+                  </div>
+                {% endfor %}
+              </div>
+              <p class="wallet-note">
+                Add cards from any bank and keep your spending neatly organized.
+              </p>
+            </div>
+
+            <form class="glass-card form-card" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="add_card" />
+              <h3>Add a Card</h3>
+              <label>
+                Card holder
+                {{ card_form.holder_name }}
+                {% for error in card_form.holder_name.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <label>
+                Bank
+                {{ card_form.bank_name }}
+                {% for error in card_form.bank_name.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <label>
+                Card number
+                {{ card_form.card_number }}
+                {% for error in card_form.card_number.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <div class="split-fields">
+                <label>
+                  Expiry
+                  {{ card_form.expiry }}
+                  {% for error in card_form.expiry.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+                <label>
+                  CVV
+                  {{ card_form.cvv }}
+                  {% for error in card_form.cvv.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                  <span class="field-help">{{ card_form.cvv.help_text }}</span>
+                </label>
+              </div>
+              <label>
+                Starting balance
+                {{ card_form.starting_balance }}
+                {% for error in card_form.starting_balance.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <label>
+                Secure note
+                {{ card_form.secure_note }}
+                {% for error in card_form.secure_note.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+                <span class="field-help">{{ card_form.secure_note.help_text }}</span>
+              </label>
+              <button type="submit" class="primary-button">Save card</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel {% if active_tab == 'expenses' %}active{% endif %}" id="expensesPanel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Spending dashboard</p>
+              <h2>Track Expenses</h2>
+            </div>
+            <p class="section-copy">
+              Group your spending by category and keep quick totals in view.
+            </p>
+          </div>
+
+          <div class="expenses-layout">
+            <form class="glass-card form-card" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="add_expense" />
+              <h3>Add an Expense</h3>
+              <label>
+                Expense title
+                {{ expense_form.title }}
+                {% for error in expense_form.title.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <div class="split-fields">
+                <label>
+                  Amount
+                  {{ expense_form.amount }}
+                  {% for error in expense_form.amount.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+                <label>
+                  Type
+                  {{ expense_form.transaction_type }}
+                </label>
+              </div>
+              <div class="split-fields">
+                <label>
+                  Category
+                  {{ expense_form.category }}
+                </label>
+                <label>
+                  Date
+                  {{ expense_form.date }}
+                  {% for error in expense_form.date.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+                <label>
+                  Payment card
+                  {{ expense_form.card }}
+                </label>
+              </div>
+              <button type="submit" class="primary-button">Add expense</button>
+            </form>
+
+            <div class="dashboard-column">
+              <div class="summary-grid">
+                {% for item in summary_cards %}
+                  <article class="summary-card">
+                    <h4>{{ item.category }}</h4>
+                    <strong>₹{{ item.total|floatformat:2 }}</strong>
+                    <p>{{ item.percent }}% of your total spend</p>
+                  </article>
+                {% empty %}
+                  <div class="empty-state">
+                    Category totals will appear here after you add expenses.
+                  </div>
+                {% endfor %}
+              </div>
+              <div class="glass-card list-card">
+                <div class="list-heading">
+                  <h3>Recent Expenses</h3>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="clear_expenses" />
+                    <button type="submit" class="ghost-button">Clear all</button>
+                  </form>
+                </div>
+                <div class="expense-list">
+                  {% for expense in expenses %}
+                    <article class="expense-item">
+                      <div>
+                        <h4>{{ expense.title }}</h4>
+                        <p>
+                          {{ expense.category }} - {{ expense.date|date:"M j, Y" }} -
+                          {% if expense.transaction_type == 'credit' %}
+                            Added to {{ expense.destination_label }}
+                          {% else %}
+                            Paid via {{ expense.destination_label }}
+                          {% endif %}
+                        </p>
+                      </div>
+                      <div class="expense-amount {% if expense.transaction_type == 'credit' %}expense-credit{% endif %}">
+                        {% if expense.transaction_type == 'credit' %}+{% else %}-{% endif %}₹{{ expense.amount|floatformat:2 }}
+                      </div>
+                    </article>
+                  {% empty %}
+                    <div class="empty-state">
+                      No expenses yet. Add your first transaction to see calculations here.
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div
+      class="modal-backdrop {% if selected_card or revealed_card %}visible{% endif %}"
+      id="cardDetailsModal"
+    >
+      <div class="details-modal">
+        <button type="button" class="modal-close" id="closeCardModal" aria-label="Close">
+          x
+        </button>
+        <div class="modal-header">
+          <p class="eyebrow">Protected card details</p>
+          <h3 id="modalCardTitle">
+            {% if selected_card or revealed_card %}
+              {{ revealed_card.bank_name|default:selected_card.bank_name }}
+            {% else %}
+              Card details
+            {% endif %}
+          </h3>
+          <p class="section-copy">
+            Enter your sign-in password to unlock the full card view.
+          </p>
+        </div>
+
+        <form method="post" class="details-auth-form {% if revealed_card %}hidden{% endif %}" id="revealCardForm">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="reveal_card" />
+          <input
+            type="hidden"
+            name="card_id"
+            id="revealCardId"
+            value="{% if selected_card or revealed_card %}{{ revealed_card.id|default:selected_card.id }}{% endif %}"
+          />
+          <label>
+            Account password
+            <input
+              type="password"
+              name="account_password"
+              id="accountPassword"
+              placeholder="Enter your sign-in password"
+              autocomplete="current-password"
+              required
+            />
+          </label>
+          {% if reveal_error %}
+            <span class="field-error">{{ reveal_error }}</span>
+          {% endif %}
+          <button type="submit" class="primary-button">Reveal details</button>
+        </form>
+
+        <div class="revealed-card-panel {% if not revealed_card %}hidden{% endif %}" id="revealedCardPanel">
+          {% if revealed_card %}
+            <article class="payment-card payment-card-large card-theme-{{ revealed_card.resolved_theme }}">
+              <div class="card-top">
+                <div class="card-tech">
+                  <div class="card-chip" aria-hidden="true"></div>
+                  <a
+                    class="nfc-tag"
+                    href="https://pay.google.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Open Google Pay"
+                    title="Open Google Pay"
+                  >
+                    <span class="nfc-wave nfc-wave-one"></span>
+                    <span class="nfc-wave nfc-wave-two"></span>
+                    <span class="nfc-wave nfc-wave-three"></span>
+                  </a>
+                </div>
+                <div class="card-brand">{{ revealed_card.card_network }}</div>
+              </div>
+              <div class="card-number card-number-full">{{ revealed_card.formatted_full_number }}</div>
+              <div class="card-bottom">
+                <div class="card-meta">
+                  <span>Card Holder</span>
+                  <strong>{{ revealed_card.holder_name }}</strong>
+                </div>
+                <div class="card-meta">
+                  <span>Bank</span>
+                  <strong>{{ revealed_card.bank_name }}</strong>
+                </div>
+              </div>
+              <div class="card-expiry">Exp {{ revealed_card.expiry }}</div>
+              <div class="card-balance-row">
+                <div class="card-balance">Balance ₹{{ revealed_card.available_balance|floatformat:2 }}</div>
+                <button type="button" class="balance-edit-button" id="balanceEditButton" aria-label="Edit balance">
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path
+                      d="M4 15.5V20h4.5L19 9.5 14.5 5 4 15.5zm12.8-11.3 2.5 2.5c.4.4.4 1 0 1.4l-1.3 1.3-3.9-3.9 1.3-1.3c.4-.4 1-.4 1.4 0z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </article>
+            <form method="post" class="balance-edit-form hidden" id="balanceEditForm">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="update_balance" />
+              <input type="hidden" name="card_id" value="{{ revealed_card.id }}" />
+              <label>
+                Edit current balance
+                <input type="number" name="new_balance" step="0.01" min="0" value="{{ revealed_card.available_balance|floatformat:2 }}" />
+              </label>
+              <button type="submit" class="ghost-button">Save balance</button>
+            </form>
+            <div class="revealed-grid">
+              <div>
+                <span>Bank</span>
+                <strong>{{ revealed_card.bank_name }}</strong>
+              </div>
+              <div>
+                <span>Network</span>
+                <strong>{{ revealed_card.card_network }}</strong>
+              </div>
+              <div>
+                <span>Holder</span>
+                <strong>{{ revealed_card.holder_name }}</strong>
+              </div>
+              <div>
+                <span>Expiry</span>
+                <strong>{{ revealed_card.expiry }}</strong>
+              </div>
+              <div>
+                <span>Starting balance</span>
+                <strong>₹{{ revealed_card.starting_balance|floatformat:2 }}</strong>
+              </div>
+              <div>
+                <span>Available balance</span>
+                <strong>₹{{ revealed_card.available_balance|floatformat:2 }}</strong>
+              </div>
+            </div>
+            {% if revealed_card.secure_note %}
+              <div class="secure-note-panel">
+                <span>Secure note</span>
+                <strong>{{ revealed_card.secure_note }}</strong>
+              </div>
+            {% endif %}
+            <p class="field-help">
+              CVV is not shown here because it is not stored after entry for security reasons.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'tracker/app.js' %}"></script>
+  </body>
+</html>

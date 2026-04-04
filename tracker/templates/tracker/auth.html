@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }} | ExpenseFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'tracker/styles.css' %}" />
+  </head>
+  <body>
+    <div class="auth-shell">
+      <section class="auth-hero">
+        <p class="eyebrow">Private finance dashboard</p>
+        <h1>ExpenseFlow</h1>
+        <p class="brand-copy">
+          Create your account to keep your cards and expenses stored separately
+          for each user.
+        </p>
+      </section>
+
+      <section class="glass-card auth-card">
+        {% if messages %}
+          <div class="message-stack">
+            {% for message in messages %}
+              <div class="flash-message">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="auth-heading">
+          <p class="eyebrow">Account access</p>
+          <h2>{{ heading }}</h2>
+        </div>
+
+        <form method="post" class="form-card auth-form">
+          {% csrf_token %}
+          {% for field in form %}
+            <label>
+              {{ field.label }}
+              {{ field }}
+              {% for error in field.errors %}
+                <span class="field-error">{{ error }}</span>
+              {% endfor %}
+            </label>
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <span class="field-error">{{ error }}</span>
+          {% endfor %}
+          <button type="submit" class="primary-button">{{ submit_label }}</button>
+        </form>
+
+        <p class="auth-switch">
+          {{ switch_text }}
+          <a href="{% url switch_url %}">{{ switch_label }}</a>
+        </p>
+      </section>
+    </div>
+  </body>
+</html>

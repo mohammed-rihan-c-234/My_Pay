@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ExpenseFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <p class="eyebrow">Personal finance</p>
+          <h1>ExpenseFlow</h1>
+          <p class="brand-copy">
+            Save your cards in a wallet-style view and track your spending by
+            category in one place.
+          </p>
+        </div>
+
+        <nav class="tabs" aria-label="Main sections">
+          <button class="tab-button active" data-tab="wallet">Wallet</button>
+          <button class="tab-button" data-tab="expenses">Expenses</button>
+        </nav>
+
+        <section class="quick-stats">
+          <div class="stat-card">
+            <span>Total spent</span>
+            <strong id="totalSpent">$0.00</strong>
+          </div>
+          <div class="stat-card">
+            <span>Top category</span>
+            <strong id="topCategory">No data yet</strong>
+          </div>
+          <div class="stat-card">
+            <span>Saved cards</span>
+            <strong id="savedCards">0 cards</strong>
+          </div>
+        </section>
+      </aside>
+
+      <main class="content">
+        <section class="panel active" id="walletPanel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Digital wallet</p>
+              <h2>Your Cards</h2>
+            </div>
+            <p class="section-copy">
+              Add payment cards and keep them in a clean Apple Pay-inspired
+              stack.
+            </p>
+          </div>
+
+          <div class="wallet-layout">
+            <div class="wallet-preview">
+              <div class="card-stack" id="cardStack"></div>
+              <p class="wallet-note">
+                Stored locally in your browser so you can keep testing and
+                refining your setup.
+              </p>
+            </div>
+
+            <form class="glass-card form-card" id="cardForm">
+              <h3>Add a Card</h3>
+              <label>
+                Card holder
+                <input type="text" id="cardHolder" placeholder="Aisha Khan" required />
+              </label>
+              <label>
+                Card number
+                <input
+                  type="text"
+                  id="cardNumber"
+                  inputmode="numeric"
+                  placeholder="1234 5678 9012 3456"
+                  maxlength="19"
+                  required
+                />
+              </label>
+              <div class="split-fields">
+                <label>
+                  Expiry
+                  <input type="text" id="cardExpiry" placeholder="08/29" maxlength="5" required />
+                </label>
+                <label>
+                  Color theme
+                  <select id="cardTheme">
+                    <option value="sunset">Sunset</option>
+                    <option value="midnight">Midnight</option>
+                    <option value="ocean">Ocean</option>
+                    <option value="forest">Forest</option>
+                  </select>
+                </label>
+              </div>
+              <button type="submit" class="primary-button">Save card</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel" id="expensesPanel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Spending dashboard</p>
+              <h2>Track Expenses</h2>
+            </div>
+            <p class="section-copy">
+              Log transactions, group them by category, and keep an eye on where
+              your money is going.
+            </p>
+          </div>
+
+          <div class="expenses-layout">
+            <form class="glass-card form-card" id="expenseForm">
+              <h3>Add an Expense</h3>
+              <label>
+                Expense title
+                <input type="text" id="expenseTitle" placeholder="Grocery run" required />
+              </label>
+              <div class="split-fields">
+                <label>
+                  Amount
+                  <input type="number" id="expenseAmount" min="0" step="0.01" placeholder="55.90" required />
+                </label>
+                <label>
+                  Category
+                  <select id="expenseCategory">
+                    <option>Food</option>
+                    <option>Transport</option>
+                    <option>Bills</option>
+                    <option>Shopping</option>
+                    <option>Health</option>
+                    <option>Entertainment</option>
+                    <option>Other</option>
+                  </select>
+                </label>
+              </div>
+              <div class="split-fields">
+                <label>
+                  Date
+                  <input type="date" id="expenseDate" required />
+                </label>
+                <label>
+                  Payment card
+                  <select id="expenseCard"></select>
+                </label>
+              </div>
+              <button type="submit" class="primary-button">Add expense</button>
+            </form>
+
+            <div class="dashboard-column">
+              <div class="summary-grid" id="categorySummary"></div>
+              <div class="glass-card list-card">
+                <div class="list-heading">
+                  <h3>Recent Expenses</h3>
+                  <button type="button" class="ghost-button" id="clearExpenses">
+                    Clear all
+                  </button>
+                </div>
+                <div class="expense-list" id="expenseList"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

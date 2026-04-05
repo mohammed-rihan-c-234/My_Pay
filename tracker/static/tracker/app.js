@@ -39,6 +39,9 @@ tabButtons.forEach((button) => {
 
 swipeCards.forEach((card) => {
   const surface = card.querySelector("[data-card-surface]");
+  if (!surface) {
+    return;
+  }
   let startX = 0;
   let currentX = 0;
   let dragging = false;
@@ -54,10 +57,15 @@ swipeCards.forEach((card) => {
     startX = event.clientX;
     currentX = card.classList.contains("is-open") ? -swipeWidth : 0;
     surface.style.transition = "none";
+    surface.setPointerCapture?.(event.pointerId);
 
     swipeCards.forEach((otherCard) => {
       if (otherCard !== card) {
         otherCard.classList.remove("is-open");
+        const otherSurface = otherCard.querySelector("[data-card-surface]");
+        if (otherSurface) {
+          otherSurface.style.transform = "";
+        }
       }
     });
   });
@@ -80,6 +88,10 @@ swipeCards.forEach((card) => {
   });
 
   surface.addEventListener("pointercancel", () => {
+    finishSwipe(startX);
+  });
+
+  surface.addEventListener("lostpointercapture", () => {
     finishSwipe(startX);
   });
 

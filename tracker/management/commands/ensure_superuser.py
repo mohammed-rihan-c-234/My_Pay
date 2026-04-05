@@ -47,9 +47,12 @@ class Command(BaseCommand):
         if not user.is_superuser:
             user.is_superuser = True
             updated = True
+        if not user.check_password(password):
+            user.set_password(password)
+            updated = True
 
         if updated:
-            user.save(update_fields=["email", "is_staff", "is_superuser"])
+            user.save()
             self.stdout.write(self.style.SUCCESS(f"Superuser '{username}' updated."))
         else:
             self.stdout.write(self.style.SUCCESS(f"Superuser '{username}' already exists."))

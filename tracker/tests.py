@@ -82,3 +82,20 @@ class DocumentVaultTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Reminder.objects.count(), 1)
         self.assertEqual(Reminder.objects.get().user, self.user)
+
+    def test_dashboard_does_not_show_far_future_licence_in_expiring_documents(self):
+        self.client.login(username="rihan", password="12345")
+        Document.objects.create(
+            user=self.user,
+            document_type=Document.TYPE_LICENSE,
+            theme=Document.THEME_AURORA,
+            holder_name="Rihan",
+            license_number="DL-0120230012345",
+            license_valid_until="2043-04-09",
+        )
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.context["expiring_documents"]), [])
+        self.assertContains(response, "No documents expiring in the next 7 days.")

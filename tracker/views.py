@@ -280,6 +280,7 @@ def dashboard(request):
     expiring_documents = documents.filter(
         document_type=Document.TYPE_LICENSE,
         license_valid_until__isnull=False,
+        license_valid_until__gte=today,
         license_valid_until__lte=report_window_end,
     ).order_by("license_valid_until")
     report_cards = [

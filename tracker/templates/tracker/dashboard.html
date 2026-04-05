@@ -222,11 +222,11 @@
           <div class="expense-totals">
             <article class="expense-total-card spend">
               <span>Spend</span>
-              <strong>â‚¹{{ total_spent|floatformat:2 }}</strong>
+              <strong>&#8377;{{ total_spent|floatformat:2 }}</strong>
             </article>
             <article class="expense-total-card credit">
               <span>Credit</span>
-              <strong>â‚¹{{ total_credited|floatformat:2 }}</strong>
+              <strong>&#8377;{{ total_credited|floatformat:2 }}</strong>
             </article>
           </div>
 
@@ -302,7 +302,7 @@
                             <p>{{ item.percent }}% of total spend</p>
                           </div>
                         </div>
-                        <strong>â‚¹{{ item.total|floatformat:2 }}</strong>
+                        <strong>&#8377;{{ item.total|floatformat:2 }}</strong>
                       </article>
                     {% empty %}
                       <div class="empty-state">

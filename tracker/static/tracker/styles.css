@@ -723,11 +723,12 @@ select:focus {
 
 .document-item {
   display: grid;
-  grid-template-columns: minmax(0, 290px) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 290px) minmax(0, 1fr);
   gap: 18px;
   padding: 18px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.72);
+  align-items: start;
 }
 
 .document-card {
@@ -864,10 +865,16 @@ select:focus {
   margin: 0;
 }
 
+.document-copy {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
 .document-copy p {
   color: var(--muted);
   font-size: 0.92rem;
-  margin-top: 8px;
+  line-height: 1.6;
 }
 
 .document-badge {
@@ -884,26 +891,13 @@ select:focus {
 }
 
 .document-actions {
-  display: grid;
-  gap: 10px;
-  min-width: 110px;
-  align-content: start;
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 4px;
 }
 
 .document-actions form {
   margin: 0;
-}
-
-.document-link {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  text-decoration: none;
-}
-
-.document-warning {
-  background: rgba(255, 245, 214, 0.72);
-  border: 1px solid rgba(214, 170, 43, 0.22);
 }
 
 .expense-amount {
@@ -1064,8 +1058,7 @@ select:focus {
   }
 
   .list-heading,
-  .expense-item,
-  .document-item {
+  .expense-item {
     flex-direction: column;
     align-items: start;
   }

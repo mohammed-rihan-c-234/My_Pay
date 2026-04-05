@@ -23,10 +23,6 @@
         <div class="brand-block">
           <p class="eyebrow">Personal finance</p>
           <h1>ExpenseFlow</h1>
-          <p class="brand-copy">
-            Save your cards in a wallet-style view and track your spending by
-            category in one place.
-          </p>
         </div>
 
         <div class="account-card">
@@ -85,10 +81,6 @@
               <p class="eyebrow">Digital wallet</p>
               <h2>Your Cards</h2>
             </div>
-            <p class="section-copy">
-              Pick a bank and the card theme is matched automatically while only
-              the last 4 digits are shown on the wallet card.
-            </p>
           </div>
 
           <div class="wallet-layout">
@@ -155,9 +147,6 @@
                   </div>
                 {% endfor %}
               </div>
-              <p class="wallet-note">
-                Add cards from any bank and keep your spending neatly organized.
-              </p>
             </div>
 
             <form class="glass-card form-card" method="post">
@@ -228,9 +217,6 @@
               <p class="eyebrow">Spending dashboard</p>
               <h2>Track Expenses</h2>
             </div>
-            <p class="section-copy">
-              Group your spending by category and keep quick totals in view.
-            </p>
           </div>
 
           <div class="expenses-layout">
@@ -336,9 +322,6 @@
               <p class="eyebrow">Secure vault</p>
               <h2>Your Documents</h2>
             </div>
-            <p class="section-copy">
-              Keep personal files like Aadhaar, licence, PAN, and RC grouped in one private place.
-            </p>
           </div>
 
           <div class="documents-layout">
@@ -450,7 +433,6 @@
               <div class="glass-card list-card">
                 <div class="list-heading">
                   <h3>Saved Document Cards</h3>
-                  <span class="field-help">Each card is private to your account.</span>
                 </div>
                 <div class="documents-list">
                   {% for document in documents %}
@@ -491,9 +473,8 @@
                       </article>
                       <div class="document-copy">
                         <h4>{{ document.holder_name }}</h4>
-                        <p>Tap the card and enter your password to view full details.</p>
                         {% if document.notes %}
-                          <p>Private note saved.</p>
+                          <p>{{ document.notes }}</p>
                         {% endif %}
                       </div>
                       <div class="document-actions">
@@ -511,9 +492,6 @@
                     </div>
                   {% endfor %}
                 </div>
-              </div>
-              <div class="empty-state document-warning">
-                Choose a theme that matches each document card so the vault feels easier to scan at a glance.
               </div>
             </div>
           </div>
@@ -538,9 +516,6 @@
               Card details
             {% endif %}
           </h3>
-          <p class="section-copy">
-            Enter your sign-in password to unlock the full card view.
-          </p>
         </div>
 
         <form method="post" class="details-auth-form {% if revealed_card %}hidden{% endif %}" id="revealCardForm">
@@ -659,9 +634,6 @@
                 <strong>{{ revealed_card.secure_note }}</strong>
               </div>
             {% endif %}
-            <p class="field-help">
-              CVV is not shown here because it is not stored after entry for security reasons.
-            </p>
           {% endif %}
         </div>
       </div>
@@ -684,9 +656,6 @@
               Document details
             {% endif %}
           </h3>
-          <p class="section-copy">
-            Enter your sign-in password to unlock the full document view.
-          </p>
         </div>
 
         <form method="post" class="details-auth-form {% if revealed_document %}hidden{% endif %}" id="revealDocumentForm">

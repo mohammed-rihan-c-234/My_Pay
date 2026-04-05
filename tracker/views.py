@@ -11,6 +11,16 @@ from django.shortcuts import redirect, render
 from .forms import CardForm, DocumentForm, ExpenseForm, SignInForm, SignUpForm
 from .models import Card, Document, Expense
 
+EXPENSE_CATEGORY_COLORS = {
+    Expense.CATEGORY_FOOD: "#f97316",
+    Expense.CATEGORY_TRANSPORT: "#3b82f6",
+    Expense.CATEGORY_BILLS: "#8b5cf6",
+    Expense.CATEGORY_SHOPPING: "#ec4899",
+    Expense.CATEGORY_HEALTH: "#10b981",
+    Expense.CATEGORY_ENTERTAINMENT: "#f59e0b",
+    Expense.CATEGORY_OTHER: "#6b7280",
+}
+
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
@@ -85,6 +95,7 @@ def dashboard(request):
     expenses = Expense.objects.filter(user=request.user).select_related("card")
     documents = Document.objects.filter(user=request.user)
     debit_expenses = expenses.filter(transaction_type=Expense.TYPE_DEBIT)
+    credit_expenses = expenses.filter(transaction_type=Expense.TYPE_CREDIT)
     active_tab = "wallet"
     selected_card = None
     revealed_card = None
@@ -196,6 +207,7 @@ def dashboard(request):
             messages.error(request, "That document could not be found.")
 
     total_spent = debit_expenses.aggregate(total=Sum("amount"))["total"] or Decimal("0")
+    total_credited = credit_expenses.aggregate(total=Sum("amount"))["total"] or Decimal("0")
     category_totals = (
         debit_expenses.values("category")
         .annotate(total=Sum("amount"))
@@ -212,6 +224,7 @@ def dashboard(request):
                 "category": item["category"],
                 "total": total,
                 "percent": percent,
+                "color": EXPENSE_CATEGORY_COLORS.get(item["category"], EXPENSE_CATEGORY_COLORS[Expense.CATEGORY_OTHER]),
             }
         )
 
@@ -221,6 +234,7 @@ def dashboard(request):
         "cards": cards,
         "expenses": expenses,
         "total_spent": total_spent,
+        "total_credited": total_credited,
         "summary_cards": summary_cards,
         "top_category": top_category,
         "saved_cards_count": cards.count(),

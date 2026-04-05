@@ -219,6 +219,17 @@
             </div>
           </div>
 
+          <div class="expense-totals">
+            <article class="expense-total-card spend">
+              <span>Spend</span>
+              <strong>â‚¹{{ total_spent|floatformat:2 }}</strong>
+            </article>
+            <article class="expense-total-card credit">
+              <span>Credit</span>
+              <strong>â‚¹{{ total_credited|floatformat:2 }}</strong>
+            </article>
+          </div>
+
           <div class="expenses-layout">
             <form class="glass-card form-card" method="post">
               {% csrf_token %}
@@ -265,6 +276,42 @@
             </form>
 
             <div class="dashboard-column">
+              <div class="glass-card list-card">
+                <div class="list-heading">
+                  <h3>Expense Graph</h3>
+                </div>
+                <div class="expense-graph">
+                  <div class="expense-graph-track">
+                    {% for item in summary_cards %}
+                      <div
+                        class="expense-graph-segment"
+                        style="width: {{ item.percent }}%; background: {{ item.color }};"
+                        title="{{ item.category }} {{ item.percent }}%"
+                      ></div>
+                    {% empty %}
+                      <div class="expense-graph-empty">No expense data yet.</div>
+                    {% endfor %}
+                  </div>
+                  <div class="expense-breakdown">
+                    {% for item in summary_cards %}
+                      <article class="expense-breakdown-item">
+                        <div class="expense-breakdown-main">
+                          <span class="expense-dot" style="background: {{ item.color }};"></span>
+                          <div>
+                            <h4>{{ item.category }}</h4>
+                            <p>{{ item.percent }}% of total spend</p>
+                          </div>
+                        </div>
+                        <strong>â‚¹{{ item.total|floatformat:2 }}</strong>
+                      </article>
+                    {% empty %}
+                      <div class="empty-state">
+                        Category totals will appear here after you add expenses.
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
               <div class="summary-grid">
                 {% for item in summary_cards %}
                   <article class="summary-card">

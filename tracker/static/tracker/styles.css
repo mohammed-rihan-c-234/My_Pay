@@ -268,6 +268,41 @@ select {
   gap: 24px;
 }
 
+.expense-totals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.expense-total-card {
+  border-radius: 24px;
+  padding: 20px 22px;
+  color: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.expense-total-card span {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.expense-total-card strong {
+  font-size: clamp(1.6rem, 2vw, 2.2rem);
+}
+
+.expense-total-card.spend {
+  background: linear-gradient(135deg, #7c2d12 0%, #ea580c 55%, #fdba74 100%);
+}
+
+.expense-total-card.credit {
+  background: linear-gradient(135deg, #064e3b 0%, #059669 55%, #6ee7b7 100%);
+}
+
 .card-stack {
   display: grid;
   gap: 18px;
@@ -680,6 +715,69 @@ select:focus {
   gap: 22px;
 }
 
+.expense-graph {
+  display: grid;
+  gap: 18px;
+}
+
+.expense-graph-track {
+  display: flex;
+  min-height: 20px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.08);
+}
+
+.expense-graph-segment {
+  min-width: 10px;
+}
+
+.expense-graph-empty {
+  width: 100%;
+  padding: 14px 16px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.expense-breakdown {
+  display: grid;
+  gap: 12px;
+}
+
+.expense-breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.expense-breakdown-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.expense-breakdown-item h4,
+.expense-breakdown-item p {
+  margin: 0;
+}
+
+.expense-breakdown-item p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.expense-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: 0 0 12px;
+}
+
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1086,12 +1184,14 @@ select:focus {
   }
 
   .split-fields,
-  .summary-grid {
+  .summary-grid,
+  .expense-totals {
     grid-template-columns: 1fr;
   }
 
   .list-heading,
-  .expense-item {
+  .expense-item,
+  .expense-breakdown-item {
     flex-direction: column;
     align-items: start;
   }

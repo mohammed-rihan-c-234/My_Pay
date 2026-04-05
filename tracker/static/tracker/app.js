@@ -9,6 +9,7 @@ const revealCardId = document.getElementById("revealCardId");
 const modalCardTitle = document.getElementById("modalCardTitle");
 const balanceEditButton = document.getElementById("balanceEditButton");
 const balanceEditForm = document.getElementById("balanceEditForm");
+const nfcLinks = document.querySelectorAll("[data-nfc-link]");
 
 tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -130,6 +131,38 @@ if (balanceEditButton && balanceEditForm) {
     balanceEditForm.classList.toggle("hidden");
   });
 }
+
+nfcLinks.forEach((link) => {
+  link.addEventListener("click", (event) => {
+    const storeUrl = link.dataset.storeUrl || link.href;
+    const appIntent = link.dataset.appIntent;
+    const iosAppUrl = link.dataset.iosAppUrl;
+    const iosStoreUrl = link.dataset.iosStoreUrl || storeUrl;
+    const isAndroid = /Android/i.test(window.navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(window.navigator.userAgent);
+
+    if (!isAndroid && !isIOS) {
+      return;
+    }
+
+    event.preventDefault();
+
+    let fallbackTriggered = false;
+    const fallbackTimer = window.setTimeout(() => {
+      fallbackTriggered = true;
+      window.location.href = isIOS ? iosStoreUrl : storeUrl;
+    }, 1400);
+
+    const cancelFallback = () => {
+      if (document.hidden && !fallbackTriggered) {
+        window.clearTimeout(fallbackTimer);
+      }
+    };
+
+    document.addEventListener("visibilitychange", cancelFallback, { once: true });
+    window.location.href = isIOS ? iosAppUrl || iosStoreUrl : appIntent;
+  });
+});
 
 document.addEventListener("pointerdown", (event) => {
   if (event.target.closest("[data-swipe-card]")) {

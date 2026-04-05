@@ -5,6 +5,7 @@ services:
     plan: free
     buildCommand: "bash build.sh"
     startCommand: "gunicorn config.wsgi:application"
+    healthCheckPath: "/healthz/"
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.10

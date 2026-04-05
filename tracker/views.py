@@ -4,11 +4,16 @@ from decimal import InvalidOperation
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 
 from .forms import CardForm, ExpenseForm, SignInForm, SignUpForm
 from .models import Card, Expense
+
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
 
 
 def landing(request):

@@ -90,6 +90,7 @@ Render uses these commands from the repo:
 
 - Build command: `bash build.sh`
 - Start command: `gunicorn config.wsgi:application`
+- Health check path: `/healthz/`
 
 During build, Render will:
 
@@ -159,6 +160,75 @@ DJANGO_SUPERUSER_PASSWORD
 - `CSRF_TRUSTED_ORIGINS`
 
 4. The free Render plan may spin down after inactivity.
+
+## Keep-Alive For Free Render
+
+Render's official free-tier behavior is that free web services spin down after 15 minutes without inbound traffic. The only guaranteed way to avoid this is upgrading to a paid web service.
+
+This project now includes a lightweight health endpoint:
+
+```text
+/healthz/
+```
+
+You can use it with an external uptime monitor to send a request every 10 minutes.
+
+Example URL:
+
+```text
+https://your-service-name.onrender.com/healthz/
+```
+
+Recommended setup:
+
+1. Deploy the app to Render.
+2. Copy your live service URL.
+3. Choose one of these keep-alive options:
+   - GitHub Actions in this repository
+   - an external monitor such as UptimeRobot or cron-job.org
+
+### Option A: GitHub Actions Keep-Alive
+
+This repository includes a scheduled workflow:
+
+```text
+.github/workflows/keep-render-awake.yml
+```
+
+It sends a request every 10 minutes to the URL stored in the GitHub secret `RENDER_HEALTHCHECK_URL`.
+
+Steps:
+
+1. Push the repository changes to GitHub.
+2. Open your GitHub repository.
+3. Go to `Settings` -> `Secrets and variables` -> `Actions`.
+4. Click `New repository secret`.
+5. Create:
+
+```text
+Name: RENDER_HEALTHCHECK_URL
+Value: https://your-service-name.onrender.com/healthz/
+```
+
+6. Go to the `Actions` tab in GitHub.
+7. Make sure GitHub Actions is enabled for the repo.
+8. Open the `Keep Render Awake` workflow.
+9. Click `Run workflow` once to test it.
+10. Confirm it succeeds with HTTP `200`.
+
+### Option B: External Uptime Monitor
+
+1. Create a free monitor in UptimeRobot or cron-job.org.
+2. Set it to send an HTTP `GET` request to:
+
+```text
+https://your-service-name.onrender.com/healthz/
+```
+
+3. Set the interval to 10 minutes.
+4. Save the monitor and confirm it gets a `200 OK` response.
+
+This is a best-effort workaround for hobby use, not a guaranteed production solution.
 
 ## Files Added For Deployment
 

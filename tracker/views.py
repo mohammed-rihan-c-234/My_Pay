@@ -283,6 +283,7 @@ def dashboard(request):
         license_valid_until__gte=today,
         license_valid_until__lte=report_window_end,
     ).order_by("license_valid_until")
+    expiring_documents_count = expiring_documents.count()
     report_cards = [
         {
             "label": "Today's spend",
@@ -312,8 +313,12 @@ def dashboard(request):
         },
         {
             "label": "Expiring docs",
-            "value": expiring_documents.count(),
-            "meta": "Driving licences expiring within 7 days",
+            "value": expiring_documents_count,
+            "meta": (
+                f"{expiring_documents_count} licence(s) expiring by {report_window_end:%b %d, %Y}"
+                if expiring_documents_count
+                else f"No licences expiring by {report_window_end:%b %d, %Y}"
+            ),
             "theme": "gold",
         },
     ]

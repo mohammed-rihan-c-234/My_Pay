@@ -99,3 +99,4 @@ class DocumentVaultTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(response.context["expiring_documents"]), [])
         self.assertContains(response, "No documents expiring in the next 7 days.")
+        self.assertContains(response, "No licences expiring by Apr 12, 2026")

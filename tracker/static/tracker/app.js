@@ -6,10 +6,16 @@ const cardDetailsModal = document.getElementById("cardDetailsModal");
 const closeCardModal = document.getElementById("closeCardModal");
 const revealCardId = document.getElementById("revealCardId");
 const modalCardTitle = document.getElementById("modalCardTitle");
+const revealCardForm = document.getElementById("revealCardForm");
+const revealedCardPanel = document.getElementById("revealedCardPanel");
+const accountPassword = document.getElementById("accountPassword");
 const documentDetailsModal = document.getElementById("documentDetailsModal");
 const closeDocumentModal = document.getElementById("closeDocumentModal");
 const revealDocumentId = document.getElementById("revealDocumentId");
 const modalDocumentTitle = document.getElementById("modalDocumentTitle");
+const revealDocumentForm = document.getElementById("revealDocumentForm");
+const revealedDocumentPanel = document.getElementById("revealedDocumentPanel");
+const documentAccountPassword = document.getElementById("documentAccountPassword");
 const balanceEditButton = document.getElementById("balanceEditButton");
 const balanceEditForm = document.getElementById("balanceEditForm");
 const nfcLinks = document.querySelectorAll("[data-nfc-link]");
@@ -120,6 +126,18 @@ function openCardModal(surface) {
 
   revealCardId.value = surface.dataset.cardId || "";
   modalCardTitle.textContent = `${surface.dataset.cardBank || "Card"} details`;
+  if (revealCardForm) {
+    revealCardForm.classList.remove("hidden");
+  }
+  if (revealedCardPanel) {
+    revealedCardPanel.classList.add("hidden");
+  }
+  if (balanceEditForm) {
+    balanceEditForm.classList.add("hidden");
+  }
+  if (accountPassword) {
+    accountPassword.value = "";
+  }
   cardDetailsModal.classList.add("visible");
 }
 
@@ -130,6 +148,15 @@ function openDocumentModal(surface) {
 
   revealDocumentId.value = surface.dataset.documentId || "";
   modalDocumentTitle.textContent = `${surface.dataset.documentTitle || "Document"} details`;
+  if (revealDocumentForm) {
+    revealDocumentForm.classList.remove("hidden");
+  }
+  if (revealedDocumentPanel) {
+    revealedDocumentPanel.classList.add("hidden");
+  }
+  if (documentAccountPassword) {
+    documentAccountPassword.value = "";
+  }
   documentDetailsModal.classList.add("visible");
 }
 

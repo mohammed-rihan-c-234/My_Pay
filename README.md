@@ -96,6 +96,7 @@ During build, Render will:
 - install Python packages
 - collect static files
 - run database migrations
+- create a superuser automatically if `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL`, and `DJANGO_SUPERUSER_PASSWORD` are set
 
 ### Option 2: Manual Render Setup
 
@@ -116,6 +117,9 @@ If you do not want to use the blueprint file, create the resources manually:
    - `DATABASE_URL` = your Render PostgreSQL connection string
    - `ALLOWED_HOSTS` = `.onrender.com`
    - `CSRF_TRUSTED_ORIGINS` = `https://your-service-name.onrender.com`
+   - `DJANGO_SUPERUSER_USERNAME` = your admin username
+   - `DJANGO_SUPERUSER_EMAIL` = your admin email
+   - `DJANGO_SUPERUSER_PASSWORD` = your admin password
 8. Save and deploy.
 
 ## How The Production Config Works
@@ -139,13 +143,13 @@ If you do not want to use the blueprint file, create the resources manually:
 
 ## Important Deployment Notes
 
-1. If this is your first production deploy, create a superuser after deployment:
+1. On Render free tier there is no shell for web services, so the project can create the superuser automatically during deploy when these environment variables are set:
 
-```bash
-python manage.py createsuperuser
+```text
+DJANGO_SUPERUSER_USERNAME
+DJANGO_SUPERUSER_EMAIL
+DJANGO_SUPERUSER_PASSWORD
 ```
-
-On Render, run that from the web service shell.
 
 2. If you later change models, commit the new migration files and redeploy.
 

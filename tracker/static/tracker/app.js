@@ -96,9 +96,9 @@ swipeCards.forEach((card) => {
     }
 
     if (!moved) {
-      if (surface.hasAttribute("data-document-surface")) {
+      if (surface.dataset.openModal === "document") {
         openDocumentModal(surface);
-      } else {
+      } else if (surface.dataset.openModal === "card") {
         openCardModal(surface);
       }
     }

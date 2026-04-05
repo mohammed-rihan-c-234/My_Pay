@@ -21,7 +21,7 @@
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand-block">
-          <p class="eyebrow">Personal finance</p>
+          <p class="eyebrow">Super app dashboard</p>
           <h1>ExpenseFlow</h1>
         </div>
 
@@ -35,29 +35,30 @@
         </div>
 
         <nav class="tabs" aria-label="Main sections">
+          <button class="tab-button {% if active_tab == 'report' %}active{% endif %}" data-tab="report" type="button">Daily report</button>
           <button class="tab-button {% if active_tab == 'wallet' %}active{% endif %}" data-tab="wallet" type="button">Wallet</button>
           <button class="tab-button {% if active_tab == 'expenses' %}active{% endif %}" data-tab="expenses" type="button">Expenses</button>
           <button class="tab-button {% if active_tab == 'documents' %}active{% endif %}" data-tab="documents" type="button">Documents</button>
+          <button class="tab-button {% if active_tab == 'tasks' %}active{% endif %}" data-tab="tasks" type="button">Tasks</button>
+          <button class="tab-button {% if active_tab == 'reminders' %}active{% endif %}" data-tab="reminders" type="button">Reminders</button>
         </nav>
 
         <section class="quick-stats">
           <div class="stat-card">
             <span>Total spent</span>
-            <strong>₹{{ total_spent|floatformat:2 }}</strong>
-          </div>
-          <div class="stat-card">
-            <span>Top category</span>
-            <strong>
-              {% if top_category %}
-                {{ top_category.category }} - ₹{{ top_category.total|floatformat:2 }}
-              {% else %}
-                No data yet
-              {% endif %}
-            </strong>
+            <strong>&#8377;{{ total_spent|floatformat:2 }}</strong>
           </div>
           <div class="stat-card">
             <span>Saved cards</span>
             <strong>{{ saved_cards_count }} card{{ saved_cards_count|pluralize }}</strong>
+          </div>
+          <div class="stat-card">
+            <span>Tasks</span>
+            <strong>{{ saved_tasks_count }} open item{{ saved_tasks_count|pluralize }}</strong>
+          </div>
+          <div class="stat-card">
+            <span>Reminders</span>
+            <strong>{{ saved_reminders_count }} reminder{{ saved_reminders_count|pluralize }}</strong>
           </div>
           <div class="stat-card">
             <span>Saved documents</span>
@@ -75,6 +76,140 @@
           </section>
         {% endif %}
 
+        <section class="panel {% if active_tab == 'report' %}active{% endif %}" id="reportPanel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Today at a glance</p>
+              <h2>Daily Status Report</h2>
+            </div>
+            <p class="section-copy">{{ today|date:"D, M j, Y" }}</p>
+          </div>
+
+          <div class="report-card-grid">
+            {% for report in report_cards %}
+              <article class="report-card planner-theme-{{ report.theme }}">
+                <span>{{ report.label }}</span>
+                <strong>{{ report.value }}</strong>
+                <p>{{ report.meta }}</p>
+              </article>
+            {% endfor %}
+          </div>
+
+          <div class="report-layout">
+            <div class="glass-card list-card">
+              <div class="list-heading">
+                <h3>Spending today</h3>
+              </div>
+              <div class="report-list">
+                {% for expense in expenses %}
+                  {% if expense.date == today and expense.transaction_type == 'debit' %}
+                    <article class="report-item">
+                      <div>
+                        <h4>{{ expense.title }}</h4>
+                        <p>{{ expense.category }} &middot; Paid via {{ expense.destination_label }}</p>
+                      </div>
+                      <strong>-&#8377;{{ expense.amount|floatformat:2 }}</strong>
+                    </article>
+                  {% endif %}
+                {% endfor %}
+                {% if today_spent == 0 %}
+                  <div class="empty-state">No spending logged for today yet.</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="glass-card list-card">
+              <div class="list-heading">
+                <h3>Tasks due</h3>
+              </div>
+              <div class="report-list">
+                {% for task in overdue_tasks %}
+                  <article class="report-item">
+                    <div>
+                      <h4>{{ task.title }}</h4>
+                      <p>Overdue since {{ task.due_date|date:"M j" }}</p>
+                    </div>
+                    <strong>{{ task.get_priority_display }}</strong>
+                  </article>
+                {% endfor %}
+                {% for task in tasks_due_today %}
+                  <article class="report-item">
+                    <div>
+                      <h4>{{ task.title }}</h4>
+                      <p>Due today{% if task.notes %} &middot; {{ task.notes }}{% endif %}</p>
+                    </div>
+                    <strong>{{ task.get_priority_display }}</strong>
+                  </article>
+                {% endfor %}
+                {% if not overdue_tasks and not tasks_due_today %}
+                  <div class="empty-state">No tasks due today.</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="glass-card list-card">
+              <div class="list-heading">
+                <h3>Expiring documents</h3>
+              </div>
+              <div class="report-list">
+                {% for document in expiring_documents %}
+                  <article class="report-item">
+                    <div>
+                      <h4>{{ document.holder_name }}</h4>
+                      <p>{{ document.get_document_type_display }} &middot; {{ document.license_valid_until|date:"M j, Y" }}</p>
+                    </div>
+                    <strong>
+                      {% if document.days_until_expiry < 0 %}
+                        Expired
+                      {% elif document.days_until_expiry == 0 %}
+                        Today
+                      {% else %}
+                        {{ document.days_until_expiry }}d
+                      {% endif %}
+                    </strong>
+                  </article>
+                {% empty %}
+                  <div class="empty-state">No documents expiring in the next 7 days.</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="glass-card list-card">
+              <div class="list-heading">
+                <h3>Reminder queue</h3>
+              </div>
+              <div class="report-list">
+                {% for reminder in reminders_today %}
+                  <article class="report-item">
+                    <div>
+                      <h4>{{ reminder.title }}</h4>
+                      <p>
+                        Today
+                        {% if reminder.remind_at %}
+                          &middot; {{ reminder.remind_at|time:"g:i A" }}
+                        {% endif %}
+                      </p>
+                    </div>
+                    <strong>{{ reminder.status_label }}</strong>
+                  </article>
+                {% endfor %}
+                {% for reminder in upcoming_reminders %}
+                  <article class="report-item">
+                    <div>
+                      <h4>{{ reminder.title }}</h4>
+                      <p>{{ reminder.remind_on|date:"D, M j" }}</p>
+                    </div>
+                    <strong>{{ reminder.status_label }}</strong>
+                  </article>
+                {% endfor %}
+                {% if not reminders_today and not upcoming_reminders %}
+                  <div class="empty-state">No reminders lined up for this week.</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section class="panel {% if active_tab == 'wallet' %}active{% endif %}" id="walletPanel">
           <div class="section-heading">
             <div>
@@ -85,7 +220,7 @@
 
           <div class="wallet-layout">
             <div class="wallet-preview">
-              <div class="card-stack">
+              <div class="card-stack stacked-cards">
                 {% for card in cards %}
                   <div class="swipe-card" data-swipe-card>
                     <div class="swipe-delete-zone">
@@ -99,12 +234,9 @@
                     <article
                       class="payment-card card-theme-{{ card.resolved_theme }}"
                       data-card-surface
+                      data-open-modal="card"
                       data-card-id="{{ card.id }}"
                       data-card-bank="{{ card.bank_name }}"
-                      data-card-holder="{{ card.holder_name }}"
-                      data-card-network="{{ card.card_network }}"
-                      data-card-last-four="{{ card.last_four }}"
-                      data-card-expiry="{{ card.expiry }}"
                     >
                       <div class="card-top">
                         <div class="card-tech">
@@ -130,7 +262,7 @@
                       <div class="card-number">**** {{ card.last_four }}</div>
                       <div class="card-bottom">
                         <div class="card-meta">
-                          <span>Card Holder</span>
+                          <span>Card holder</span>
                           <strong>{{ card.holder_name }}</strong>
                         </div>
                         <div class="card-meta">
@@ -142,9 +274,7 @@
                     </article>
                   </div>
                 {% empty %}
-                  <div class="empty-state">
-                    No cards saved yet. Add one to create your wallet stack.
-                  </div>
+                  <div class="empty-state">No cards saved yet. Add one to create your wallet stack.</div>
                 {% endfor %}
               </div>
             </div>
@@ -255,7 +385,7 @@
                   {{ expense_form.transaction_type }}
                 </label>
               </div>
-              <div class="split-fields">
+              <div class="split-fields split-fields-three">
                 <label>
                   Category
                   {{ expense_form.category }}
@@ -305,9 +435,7 @@
                         <strong>&#8377;{{ item.total|floatformat:2 }}</strong>
                       </article>
                     {% empty %}
-                      <div class="empty-state">
-                        Category totals will appear here after you add expenses.
-                      </div>
+                      <div class="empty-state">Category totals will appear here after you add expenses.</div>
                     {% endfor %}
                   </div>
                 </div>
@@ -316,13 +444,11 @@
                 {% for item in summary_cards %}
                   <article class="summary-card">
                     <h4>{{ item.category }}</h4>
-                    <strong>₹{{ item.total|floatformat:2 }}</strong>
+                    <strong>&#8377;{{ item.total|floatformat:2 }}</strong>
                     <p>{{ item.percent }}% of your total spend</p>
                   </article>
                 {% empty %}
-                  <div class="empty-state">
-                    Category totals will appear here after you add expenses.
-                  </div>
+                  <div class="empty-state">Category totals will appear here after you add expenses.</div>
                 {% endfor %}
               </div>
               <div class="glass-card list-card">
@@ -340,7 +466,7 @@
                       <div>
                         <h4>{{ expense.title }}</h4>
                         <p>
-                          {{ expense.category }} - {{ expense.date|date:"M j, Y" }} -
+                          {{ expense.category }} &middot; {{ expense.date|date:"M j, Y" }} &middot;
                           {% if expense.transaction_type == 'credit' %}
                             Added to {{ expense.destination_label }}
                           {% else %}
@@ -349,13 +475,11 @@
                         </p>
                       </div>
                       <div class="expense-amount {% if expense.transaction_type == 'credit' %}expense-credit{% endif %}">
-                        {% if expense.transaction_type == 'credit' %}+{% else %}-{% endif %}₹{{ expense.amount|floatformat:2 }}
+                        {% if expense.transaction_type == 'credit' %}+{% else %}-{% endif %}&#8377;{{ expense.amount|floatformat:2 }}
                       </div>
                     </article>
                   {% empty %}
-                    <div class="empty-state">
-                      No expenses yet. Add your first transaction to see calculations here.
-                    </div>
+                    <div class="empty-state">No expenses yet. Add your first transaction to see calculations here.</div>
                   {% endfor %}
                 </div>
               </div>
@@ -373,7 +497,7 @@
 
           <div class="documents-layout">
             <div class="wallet-preview">
-              <div class="card-stack document-stack">
+              <div class="card-stack document-stack stacked-cards">
                 {% for document in documents %}
                   <div class="swipe-card" data-swipe-card>
                     <div class="swipe-delete-zone">
@@ -387,10 +511,9 @@
                     <article
                       class="document-card document-theme-{{ document.theme }}"
                       data-card-surface
-                      data-document-surface
+                      data-open-modal="document"
                       data-document-id="{{ document.id }}"
                       data-document-title="{{ document.get_document_type_display }}"
-                      data-document-holder="{{ document.holder_name }}"
                     >
                       <div class="document-card-top">
                         <span class="document-chip">{{ document.get_document_type_display }}</span>
@@ -421,9 +544,7 @@
                     </article>
                   </div>
                 {% empty %}
-                  <div class="empty-state">
-                    No document cards saved yet. Add one to build your vault.
-                  </div>
+                  <div class="empty-state">No document cards saved yet. Add one to build your vault.</div>
                 {% endfor %}
               </div>
             </div>
@@ -533,17 +654,193 @@
             </form>
           </div>
         </section>
+
+        <section class="panel {% if active_tab == 'tasks' %}active{% endif %}" id="tasksPanel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Planner board</p>
+              <h2>Tasks</h2>
+            </div>
+            <p class="section-copy">Swipe left to delete. These cards stay open and simple, with no password gate.</p>
+          </div>
+
+          <div class="planner-layout">
+            <div class="planner-card-grid">
+              {% for task in tasks %}
+                <div class="swipe-card planner-swipe-card" data-swipe-card>
+                  <div class="swipe-delete-zone">
+                    <form method="post" class="swipe-delete-form">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="delete_task" />
+                      <input type="hidden" name="task_id" value="{{ task.id }}" />
+                      <button type="submit" class="card-delete-button">Delete</button>
+                    </form>
+                  </div>
+                  <article class="planner-card planner-theme-{{ task.theme }}" data-card-surface>
+                    <div class="planner-card-top">
+                      <span class="planner-pill">{{ task.get_priority_display }} priority</span>
+                      <span class="planner-state">{{ task.due_state }}</span>
+                    </div>
+                    <h3>{{ task.title }}</h3>
+                    <p>{{ task.notes|default:"No extra notes for this task yet." }}</p>
+                    <div class="planner-card-bottom">
+                      <div>
+                        <span>Due date</span>
+                        <strong>{{ task.due_date|date:"D, M j" }}</strong>
+                      </div>
+                      <div>
+                        <span>Timeline</span>
+                        <strong>
+                          {% if task.due_in_days < 0 %}
+                            {{ task.due_in_days|cut:"-" }} days late
+                          {% elif task.due_in_days == 0 %}
+                            Today
+                          {% else %}
+                            In {{ task.due_in_days }} days
+                          {% endif %}
+                        </strong>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              {% empty %}
+                <div class="empty-state">No tasks yet. Add one to start the planner.</div>
+              {% endfor %}
+            </div>
+
+            <form class="glass-card form-card" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="add_task" />
+              <h3>Add a Task</h3>
+              <label>
+                Title
+                {{ task_form.title }}
+                {% for error in task_form.title.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <label>
+                Notes
+                {{ task_form.notes }}
+                {% for error in task_form.notes.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <div class="split-fields split-fields-three">
+                <label>
+                  Due date
+                  {{ task_form.due_date }}
+                  {% for error in task_form.due_date.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+                <label>
+                  Priority
+                  {{ task_form.priority }}
+                </label>
+                <label>
+                  Theme
+                  {{ task_form.theme }}
+                </label>
+              </div>
+              <button type="submit" class="primary-button">Save task</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel {% if active_tab == 'reminders' %}active{% endif %}" id="remindersPanel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Daily alerts</p>
+              <h2>Reminders</h2>
+            </div>
+            <p class="section-copy">Themed reminder cards with swipe delete, without stacking or unlock steps.</p>
+          </div>
+
+          <div class="planner-layout">
+            <div class="planner-card-grid">
+              {% for reminder in reminders %}
+                <div class="swipe-card planner-swipe-card" data-swipe-card>
+                  <div class="swipe-delete-zone">
+                    <form method="post" class="swipe-delete-form">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="delete_reminder" />
+                      <input type="hidden" name="reminder_id" value="{{ reminder.id }}" />
+                      <button type="submit" class="card-delete-button">Delete</button>
+                    </form>
+                  </div>
+                  <article class="planner-card planner-theme-{{ reminder.theme }}" data-card-surface>
+                    <div class="planner-card-top">
+                      <span class="planner-pill">Reminder</span>
+                      <span class="planner-state">{{ reminder.status_label }}</span>
+                    </div>
+                    <h3>{{ reminder.title }}</h3>
+                    <p>{{ reminder.note|default:"No note added for this reminder yet." }}</p>
+                    <div class="planner-card-bottom">
+                      <div>
+                        <span>Remind on</span>
+                        <strong>{{ reminder.remind_on|date:"D, M j" }}</strong>
+                      </div>
+                      <div>
+                        <span>Time</span>
+                        <strong>{{ reminder.remind_at|time:"g:i A"|default:"Any time" }}</strong>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              {% empty %}
+                <div class="empty-state">No reminders yet. Add one to build your daily queue.</div>
+              {% endfor %}
+            </div>
+
+            <form class="glass-card form-card" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="add_reminder" />
+              <h3>Add a Reminder</h3>
+              <label>
+                Title
+                {{ reminder_form.title }}
+                {% for error in reminder_form.title.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <label>
+                Note
+                {{ reminder_form.note }}
+                {% for error in reminder_form.note.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <div class="split-fields split-fields-three">
+                <label>
+                  Date
+                  {{ reminder_form.remind_on }}
+                  {% for error in reminder_form.remind_on.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+                <label>
+                  Time
+                  {{ reminder_form.remind_at }}
+                  {% for error in reminder_form.remind_at.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+                <label>
+                  Theme
+                  {{ reminder_form.theme }}
+                </label>
+              </div>
+              <button type="submit" class="primary-button">Save reminder</button>
+            </form>
+          </div>
+        </section>
       </main>
     </div>
 
-    <div
-      class="modal-backdrop {% if selected_card or revealed_card %}visible{% endif %}"
-      id="cardDetailsModal"
-    >
+    <div class="modal-backdrop {% if selected_card or revealed_card %}visible{% endif %}" id="cardDetailsModal">
       <div class="details-modal">
-        <button type="button" class="modal-close" id="closeCardModal" aria-label="Close">
-          x
-        </button>
+        <button type="button" class="modal-close" id="closeCardModal" aria-label="Close">x</button>
         <div class="modal-header">
           <p class="eyebrow">Protected card details</p>
           <h3 id="modalCardTitle">
@@ -608,7 +905,7 @@
               <div class="card-number card-number-full">{{ revealed_card.formatted_full_number }}</div>
               <div class="card-bottom">
                 <div class="card-meta">
-                  <span>Card Holder</span>
+                  <span>Card holder</span>
                   <strong>{{ revealed_card.holder_name }}</strong>
                 </div>
                 <div class="card-meta">
@@ -618,7 +915,7 @@
               </div>
               <div class="card-expiry">Exp {{ revealed_card.expiry }}</div>
               <div class="card-balance-row">
-                <div class="card-balance">Balance ₹{{ revealed_card.available_balance|floatformat:2 }}</div>
+                <div class="card-balance">Balance &#8377;{{ revealed_card.available_balance|floatformat:2 }}</div>
                 <button type="button" class="balance-edit-button" id="balanceEditButton" aria-label="Edit balance">
                   <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                     <path
@@ -658,11 +955,11 @@
               </div>
               <div>
                 <span>Starting balance</span>
-                <strong>₹{{ revealed_card.starting_balance|floatformat:2 }}</strong>
+                <strong>&#8377;{{ revealed_card.starting_balance|floatformat:2 }}</strong>
               </div>
               <div>
                 <span>Available balance</span>
-                <strong>₹{{ revealed_card.available_balance|floatformat:2 }}</strong>
+                <strong>&#8377;{{ revealed_card.available_balance|floatformat:2 }}</strong>
               </div>
             </div>
             {% if revealed_card.secure_note %}
@@ -676,14 +973,9 @@
       </div>
     </div>
 
-    <div
-      class="modal-backdrop {% if selected_document or revealed_document %}visible{% endif %}"
-      id="documentDetailsModal"
-    >
+    <div class="modal-backdrop {% if selected_document or revealed_document %}visible{% endif %}" id="documentDetailsModal">
       <div class="details-modal">
-        <button type="button" class="modal-close" id="closeDocumentModal" aria-label="Close">
-          x
-        </button>
+        <button type="button" class="modal-close" id="closeDocumentModal" aria-label="Close">x</button>
         <div class="modal-header">
           <p class="eyebrow">Protected document details</p>
           <h3 id="modalDocumentTitle">
@@ -743,7 +1035,7 @@
                 {% if revealed_document.document_type == 'license' %}
                   <span>Valid till {{ revealed_document.license_valid_until|date:"d M Y" }}</span>
                 {% elif revealed_document.document_type == 'rc' %}
-                  <span>{{ revealed_document.vehicle_model }}{% if revealed_document.issuing_state %} · {{ revealed_document.issuing_state }}{% endif %}</span>
+                  <span>{{ revealed_document.vehicle_model }}{% if revealed_document.issuing_state %} &middot; {{ revealed_document.issuing_state }}{% endif %}</span>
                 {% elif revealed_document.date_of_birth %}
                   <span>DOB {{ revealed_document.date_of_birth|date:"d M Y" }}</span>
                 {% else %}

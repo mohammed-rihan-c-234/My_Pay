@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import Document
+from .models import Document, Reminder, Task
 
 
 @override_settings(SECURE_SSL_REDIRECT=False)
@@ -46,3 +46,39 @@ class DocumentVaultTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Use a valid PAN format like ABCDE1234F.")
         self.assertEqual(Document.objects.count(), 0)
+
+    def test_dashboard_adds_task_for_logged_in_user(self):
+        self.client.login(username="rihan", password="12345")
+        response = self.client.post(
+            reverse("dashboard"),
+            {
+                "action": "add_task",
+                "title": "Renew licence",
+                "notes": "Check expiry date",
+                "due_date": "2026-04-06",
+                "priority": Task.PRIORITY_HIGH,
+                "theme": Task.THEME_GOLD,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Task.objects.count(), 1)
+        self.assertEqual(Task.objects.get().user, self.user)
+
+    def test_dashboard_adds_reminder_for_logged_in_user(self):
+        self.client.login(username="rihan", password="12345")
+        response = self.client.post(
+            reverse("dashboard"),
+            {
+                "action": "add_reminder",
+                "title": "Pay credit card",
+                "note": "Before evening",
+                "remind_on": "2026-04-05",
+                "remind_at": "18:30",
+                "theme": Reminder.THEME_BERRY,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Reminder.objects.count(), 1)
+        self.assertEqual(Reminder.objects.get().user, self.user)

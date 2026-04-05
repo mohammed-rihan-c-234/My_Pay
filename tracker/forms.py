@@ -5,7 +5,7 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from .models import Card, Document, Expense
+from .models import Card, Document, Expense, Reminder, Task
 
 
 class CardForm(forms.ModelForm):
@@ -269,3 +269,39 @@ class DocumentForm(forms.ModelForm):
                 self.add_error("vehicle_model", "Enter the vehicle model.")
 
         return cleaned_data
+
+
+class TaskForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ["title", "notes", "due_date", "priority", "theme"]
+        widgets = {
+            "title": forms.TextInput(attrs={"placeholder": "Renew insurance"}),
+            "notes": forms.TextInput(attrs={"placeholder": "Optional note"}),
+            "due_date": forms.DateInput(attrs={"type": "date"}),
+            "priority": forms.Select(),
+            "theme": forms.Select(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound:
+            self.fields["due_date"].initial = timezone.localdate()
+
+
+class ReminderForm(forms.ModelForm):
+    class Meta:
+        model = Reminder
+        fields = ["title", "note", "remind_on", "remind_at", "theme"]
+        widgets = {
+            "title": forms.TextInput(attrs={"placeholder": "Pay broadband bill"}),
+            "note": forms.TextInput(attrs={"placeholder": "Optional reminder note"}),
+            "remind_on": forms.DateInput(attrs={"type": "date"}),
+            "remind_at": forms.TimeInput(attrs={"type": "time"}),
+            "theme": forms.Select(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.is_bound:
+            self.fields["remind_on"].initial = timezone.localdate()

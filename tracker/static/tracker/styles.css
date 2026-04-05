@@ -262,10 +262,27 @@ select {
 
 .wallet-layout,
 .expenses-layout,
-.documents-layout {
+.documents-layout,
+.planner-layout {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 24px;
+}
+
+.report-card-grid,
+.report-layout,
+.planner-card-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.report-card-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 24px;
+}
+
+.report-layout {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .expense-totals {
@@ -335,34 +352,34 @@ select {
   border-radius: 28px;
 }
 
-.swipe-card:nth-child(1) {
+.stacked-cards .swipe-card:nth-child(1) {
   z-index: 5;
 }
 
-.swipe-card:nth-child(2) {
+.stacked-cards .swipe-card:nth-child(2) {
   z-index: 4;
 }
 
-.swipe-card:nth-child(3) {
+.stacked-cards .swipe-card:nth-child(3) {
   z-index: 3;
 }
 
-.swipe-card:not(:first-child) {
+.stacked-cards .swipe-card:not(:first-child) {
   margin-top: -148px;
   transform: translateY(0);
 }
 
-.swipe-card:nth-child(2) .payment-card {
+.stacked-cards .swipe-card:nth-child(2) .payment-card {
   transform: scale(0.985);
   filter: brightness(0.96);
 }
 
-.swipe-card:nth-child(3) .payment-card {
+.stacked-cards .swipe-card:nth-child(3) .payment-card {
   transform: scale(0.97);
   filter: brightness(0.92);
 }
 
-.swipe-card:nth-child(n + 4) .payment-card {
+.stacked-cards .swipe-card:nth-child(n + 4) .payment-card {
   transform: scale(0.96);
   filter: brightness(0.9);
 }
@@ -409,16 +426,16 @@ select {
   transform: translateX(-112px);
 }
 
-.card-stack:hover .swipe-card {
+.stacked-cards:hover .swipe-card {
   transition: transform 220ms ease;
 }
 
-.card-stack .swipe-card:hover {
+.stacked-cards .swipe-card:hover {
   z-index: 20;
   transform: translateY(-16px);
 }
 
-.card-stack .swipe-card:hover .payment-card {
+.stacked-cards .swipe-card:hover .payment-card {
   transform: scale(1.015);
   box-shadow: 0 28px 65px rgba(16, 17, 20, 0.28);
   filter: brightness(1);
@@ -784,6 +801,10 @@ select:focus {
   gap: 16px;
 }
 
+.split-fields-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .summary-card {
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.45);
@@ -822,6 +843,60 @@ select:focus {
 .expense-list {
   display: grid;
   gap: 12px;
+}
+
+.report-list {
+  display: grid;
+  gap: 12px;
+}
+
+.report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.report-item h4,
+.report-item p {
+  margin: 0;
+}
+
+.report-item p {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.report-card {
+  border-radius: 24px;
+  padding: 22px;
+  color: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.report-card span,
+.planner-card span {
+  display: block;
+  opacity: 0.82;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.report-card strong {
+  display: block;
+  margin: 14px 0 10px;
+  font-size: clamp(1.7rem, 2.2vw, 2.3rem);
+}
+
+.report-card p {
+  margin: 0;
+  opacity: 0.92;
+  line-height: 1.5;
 }
 
 .documents-list {
@@ -979,6 +1054,98 @@ select:focus {
 .document-card-large {
   min-height: 230px;
   cursor: default;
+}
+
+.planner-swipe-card {
+  border-radius: 24px;
+}
+
+.planner-card-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+}
+
+.planner-card {
+  min-height: 220px;
+  border-radius: 24px;
+  padding: 22px;
+  color: #ffffff;
+  box-shadow: 0 22px 52px rgba(16, 17, 20, 0.22);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+  touch-action: pan-y;
+}
+
+.swipe-card.is-open .planner-card {
+  transform: translateX(-112px);
+}
+
+.planner-card h3,
+.planner-card p {
+  margin: 0;
+}
+
+.planner-card h3 {
+  margin-top: 20px;
+  font-size: 1.3rem;
+}
+
+.planner-card p {
+  margin-top: 12px;
+  max-width: 32ch;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.planner-card-top,
+.planner-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.planner-card-bottom {
+  margin-top: 26px;
+  align-items: end;
+}
+
+.planner-card-bottom strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.planner-pill,
+.planner-state {
+  display: inline-flex;
+  width: fit-content;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.planner-theme-sunrise {
+  background: linear-gradient(145deg, #7c2d12 0%, #ea580c 52%, #fdba74 100%);
+}
+
+.planner-theme-ocean {
+  background: linear-gradient(145deg, #082f49 0%, #0369a1 50%, #7dd3fc 100%);
+}
+
+.planner-theme-forest {
+  background: linear-gradient(145deg, #14532d 0%, #15803d 50%, #86efac 100%);
+}
+
+.planner-theme-berry {
+  background: linear-gradient(145deg, #4c0519 0%, #be185d 50%, #f9a8d4 100%);
+}
+
+.planner-theme-graphite {
+  background: linear-gradient(145deg, #111827 0%, #374151 48%, #9ca3af 100%);
+}
+
+.planner-theme-gold {
+  background: linear-gradient(145deg, #713f12 0%, #d97706 52%, #fde68a 100%);
 }
 
 .expense-item p {
@@ -1153,7 +1320,9 @@ select:focus {
   .auth-shell,
   .wallet-layout,
   .expenses-layout,
-  .documents-layout {
+  .documents-layout,
+  .planner-layout,
+  .report-layout {
     grid-template-columns: 1fr;
   }
 
@@ -1162,7 +1331,7 @@ select:focus {
     flex-direction: column;
   }
 
-  .swipe-card:not(:first-child) {
+  .stacked-cards .swipe-card:not(:first-child) {
     margin-top: -116px;
   }
 
@@ -1185,13 +1354,19 @@ select:focus {
 
   .split-fields,
   .summary-grid,
-  .expense-totals {
+  .expense-totals,
+  .split-fields-three,
+  .report-card-grid,
+  .planner-card-grid {
     grid-template-columns: 1fr;
   }
 
   .list-heading,
   .expense-item,
-  .expense-breakdown-item {
+  .expense-breakdown-item,
+  .report-item,
+  .planner-card-top,
+  .planner-card-bottom {
     flex-direction: column;
     align-items: start;
   }
@@ -1200,7 +1375,7 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
-  .swipe-card:not(:first-child) {
+  .stacked-cards .swipe-card:not(:first-child) {
     margin-top: -78px;
   }
 
@@ -1208,9 +1383,9 @@ select:focus {
     margin-top: -52px;
   }
 
-  .swipe-card:nth-child(2) .payment-card,
-  .swipe-card:nth-child(3) .payment-card,
-  .swipe-card:nth-child(n + 4) .payment-card {
+  .stacked-cards .swipe-card:nth-child(2) .payment-card,
+  .stacked-cards .swipe-card:nth-child(3) .payment-card,
+  .stacked-cards .swipe-card:nth-child(n + 4) .payment-card {
     transform: none;
     filter: none;
   }
@@ -1222,11 +1397,11 @@ select:focus {
     filter: none;
   }
 
-  .card-stack .swipe-card:hover {
+  .stacked-cards .swipe-card:hover {
     transform: none;
   }
 
-  .card-stack .swipe-card:hover .payment-card {
+  .stacked-cards .swipe-card:hover .payment-card {
     transform: none;
   }
 

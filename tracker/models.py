@@ -1,9 +1,11 @@
 from decimal import Decimal
 import os
+from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Sum
+from django.utils import timezone
 
 
 def document_upload_to(instance, filename):
@@ -354,5 +356,102 @@ class Document(models.Model):
         if len(identifier) <= 4:
             return identifier
         return f"{'*' * max(len(identifier) - 4, 0)}{identifier[-4:]}"
+
+    @property
+    def days_until_expiry(self):
+        if not self.license_valid_until:
+            return None
+        return (self.license_valid_until - timezone.localdate()).days
+
+
+class ThemeMixin(models.Model):
+    THEME_SUNRISE = "sunrise"
+    THEME_OCEAN = "ocean"
+    THEME_FOREST = "forest"
+    THEME_BERRY = "berry"
+    THEME_GRAPHITE = "graphite"
+    THEME_GOLD = "gold"
+
+    THEME_CHOICES = [
+        (THEME_SUNRISE, "Sunrise"),
+        (THEME_OCEAN, "Ocean"),
+        (THEME_FOREST, "Forest"),
+        (THEME_BERRY, "Berry"),
+        (THEME_GRAPHITE, "Graphite"),
+        (THEME_GOLD, "Gold"),
+    ]
+
+    theme = models.CharField(max_length=20, choices=THEME_CHOICES, default=THEME_OCEAN)
+
+    class Meta:
+        abstract = True
+
+
+class Task(ThemeMixin):
+    PRIORITY_LOW = "low"
+    PRIORITY_MEDIUM = "medium"
+    PRIORITY_HIGH = "high"
+
+    PRIORITY_CHOICES = [
+        (PRIORITY_LOW, "Low"),
+        (PRIORITY_MEDIUM, "Medium"),
+        (PRIORITY_HIGH, "High"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")
+    title = models.CharField(max_length=140)
+    notes = models.CharField(max_length=220, blank=True)
+    due_date = models.DateField()
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default=PRIORITY_MEDIUM)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["due_date", "-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def due_state(self):
+        today = timezone.localdate()
+        if self.due_date < today:
+            return "Overdue"
+        if self.due_date == today:
+            return "Due today"
+        return "Upcoming"
+
+    @property
+    def due_in_days(self):
+        return (self.due_date - timezone.localdate()).days
+
+
+class Reminder(ThemeMixin):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reminders")
+    title = models.CharField(max_length=140)
+    note = models.CharField(max_length=220, blank=True)
+    remind_on = models.DateField()
+    remind_at = models.TimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["remind_on", "remind_at", "-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def status_label(self):
+        today = timezone.localdate()
+        if self.remind_on < today:
+            return "Missed"
+        if self.remind_on == today:
+            return "Today"
+        if self.remind_on <= today + timedelta(days=1):
+            return "Tomorrow"
+        return "Upcoming"
+
+    @property
+    def days_until(self):
+        return (self.remind_on - timezone.localdate()).days
 
 # Create your models here.

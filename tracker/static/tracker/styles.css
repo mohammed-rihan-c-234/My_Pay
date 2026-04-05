@@ -275,6 +275,25 @@ select {
   padding-bottom: 32px;
 }
 
+.document-stack .swipe-card:not(:first-child) {
+  margin-top: -102px;
+}
+
+.document-stack .swipe-card:nth-child(2) .document-card {
+  transform: scale(0.988);
+  filter: brightness(0.97);
+}
+
+.document-stack .swipe-card:nth-child(3) .document-card {
+  transform: scale(0.976);
+  filter: brightness(0.94);
+}
+
+.document-stack .swipe-card:nth-child(n + 4) .document-card {
+  transform: scale(0.968);
+  filter: brightness(0.91);
+}
+
 .swipe-card {
   position: relative;
   overflow: hidden;
@@ -351,6 +370,10 @@ select {
   transform: translateX(-112px);
 }
 
+.document-stack .swipe-card.is-open .document-card {
+  transform: translateX(-112px);
+}
+
 .card-stack:hover .swipe-card {
   transition: transform 220ms ease;
 }
@@ -363,6 +386,12 @@ select {
 .card-stack .swipe-card:hover .payment-card {
   transform: scale(1.015);
   box-shadow: 0 28px 65px rgba(16, 17, 20, 0.28);
+  filter: brightness(1);
+}
+
+.document-stack .swipe-card:hover .document-card {
+  transform: scale(1.01);
+  box-shadow: 0 28px 60px rgba(16, 17, 20, 0.26);
   filter: brightness(1);
 }
 
@@ -1038,6 +1067,10 @@ select:focus {
   .swipe-card:not(:first-child) {
     margin-top: -116px;
   }
+
+  .document-stack .swipe-card:not(:first-child) {
+    margin-top: -84px;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1071,9 +1104,20 @@ select:focus {
     margin-top: -78px;
   }
 
+  .document-stack .swipe-card:not(:first-child) {
+    margin-top: -52px;
+  }
+
   .swipe-card:nth-child(2) .payment-card,
   .swipe-card:nth-child(3) .payment-card,
   .swipe-card:nth-child(n + 4) .payment-card {
+    transform: none;
+    filter: none;
+  }
+
+  .document-stack .swipe-card:nth-child(2) .document-card,
+  .document-stack .swipe-card:nth-child(3) .document-card,
+  .document-stack .swipe-card:nth-child(n + 4) .document-card {
     transform: none;
     filter: none;
   }
@@ -1083,6 +1127,10 @@ select:focus {
   }
 
   .card-stack .swipe-card:hover .payment-card {
+    transform: none;
+  }
+
+  .document-stack .swipe-card:hover .document-card {
     transform: none;
   }
 }

@@ -1,8 +1,15 @@
 from decimal import Decimal
+import os
 
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Sum
+
+
+def document_upload_to(instance, filename):
+    extension = os.path.splitext(filename)[1].lower()
+    safe_name = f"{instance.document_type}_{instance.user_id}{extension}"
+    return f"documents/user_{instance.user_id}/{safe_name}"
 
 
 class Card(models.Model):
@@ -281,5 +288,71 @@ class Expense(models.Model):
             if any(keyword in title_text for keyword in keywords):
                 return category
         return cls.CATEGORY_OTHER
+
+
+class Document(models.Model):
+    TYPE_AADHAAR = "aadhaar"
+    TYPE_LICENSE = "license"
+    TYPE_PAN = "pan"
+    TYPE_RC = "rc"
+    THEME_SAFFRON = "saffron"
+    THEME_MIDNIGHT = "midnight"
+    THEME_EMERALD = "emerald"
+    THEME_AURORA = "aurora"
+    THEME_SUNSET = "sunset"
+    THEME_ROYAL = "royal"
+
+    TYPE_CHOICES = [
+        (TYPE_AADHAAR, "Aadhaar Card"),
+        (TYPE_LICENSE, "Driving Licence"),
+        (TYPE_PAN, "PAN Card"),
+        (TYPE_RC, "Vehicle RC"),
+    ]
+    THEME_CHOICES = [
+        (THEME_SAFFRON, "Saffron Glow"),
+        (THEME_MIDNIGHT, "Midnight Glass"),
+        (THEME_EMERALD, "Emerald Leaf"),
+        (THEME_AURORA, "Aurora Pulse"),
+        (THEME_SUNSET, "Sunset Fade"),
+        (THEME_ROYAL, "Royal Indigo"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="documents")
+    document_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    theme = models.CharField(max_length=20, choices=THEME_CHOICES, default=THEME_AURORA)
+    holder_name = models.CharField(max_length=120)
+    date_of_birth = models.DateField(null=True, blank=True)
+    aadhaar_number = models.CharField(max_length=14, blank=True)
+    pan_number = models.CharField(max_length=10, blank=True)
+    license_number = models.CharField(max_length=25, blank=True)
+    license_valid_until = models.DateField(null=True, blank=True)
+    vehicle_registration_number = models.CharField(max_length=20, blank=True)
+    vehicle_model = models.CharField(max_length=80, blank=True)
+    issuing_state = models.CharField(max_length=60, blank=True)
+    notes = models.CharField(max_length=180, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["document_type", "-created_at"]
+
+    def __str__(self):
+        return f"{self.get_document_type_display()} - {self.holder_name}"
+
+    @property
+    def primary_identifier(self):
+        mapping = {
+            self.TYPE_AADHAAR: self.aadhaar_number,
+            self.TYPE_PAN: self.pan_number,
+            self.TYPE_LICENSE: self.license_number,
+            self.TYPE_RC: self.vehicle_registration_number,
+        }
+        return mapping.get(self.document_type, "")
+
+    @property
+    def masked_identifier(self):
+        identifier = (self.primary_identifier or "").replace(" ", "")
+        if len(identifier) <= 4:
+            return identifier
+        return f"{'*' * max(len(identifier) - 4, 0)}{identifier[-4:]}"
 
 # Create your models here.

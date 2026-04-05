@@ -2,9 +2,10 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from .models import Card, Expense
+from .models import Card, Document, Expense
 
 
 class CardForm(forms.ModelForm):
@@ -191,3 +192,80 @@ class SignUpForm(UserCreationForm):
 class SignInForm(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "yourname"}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Password"}))
+
+
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = [
+            "document_type",
+            "theme",
+            "holder_name",
+            "date_of_birth",
+            "aadhaar_number",
+            "pan_number",
+            "license_number",
+            "license_valid_until",
+            "vehicle_registration_number",
+            "vehicle_model",
+            "issuing_state",
+            "notes",
+        ]
+        widgets = {
+            "document_type": forms.Select(),
+            "theme": forms.Select(),
+            "holder_name": forms.TextInput(attrs={"placeholder": "Mohammed Rihan"}),
+            "date_of_birth": forms.DateInput(attrs={"type": "date"}),
+            "aadhaar_number": forms.TextInput(attrs={"placeholder": "1234 5678 9012", "maxlength": "14"}),
+            "pan_number": forms.TextInput(attrs={"placeholder": "ABCDE1234F", "maxlength": "10"}),
+            "license_number": forms.TextInput(attrs={"placeholder": "DL-0120230012345"}),
+            "license_valid_until": forms.DateInput(attrs={"type": "date"}),
+            "vehicle_registration_number": forms.TextInput(attrs={"placeholder": "KL 07 AB 1234"}),
+            "vehicle_model": forms.TextInput(attrs={"placeholder": "Hyundai i20"}),
+            "issuing_state": forms.TextInput(attrs={"placeholder": "Kerala"}),
+            "notes": forms.TextInput(attrs={"placeholder": "Optional private note"}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        document_type = cleaned_data.get("document_type")
+
+        if document_type == Document.TYPE_AADHAAR:
+            aadhaar_number = (cleaned_data.get("aadhaar_number") or "").replace(" ", "")
+            if not aadhaar_number:
+                self.add_error("aadhaar_number", "Enter the Aadhaar number.")
+            elif not aadhaar_number.isdigit() or len(aadhaar_number) != 12:
+                self.add_error("aadhaar_number", "Use a valid 12 digit Aadhaar number.")
+            else:
+                cleaned_data["aadhaar_number"] = " ".join(
+                    aadhaar_number[index:index + 4] for index in range(0, 12, 4)
+                )
+
+        if document_type == Document.TYPE_PAN:
+            pan_number = (cleaned_data.get("pan_number") or "").upper().strip()
+            validator = RegexValidator(
+                regex=r"^[A-Z]{5}[0-9]{4}[A-Z]$",
+                message="Use a valid PAN format like ABCDE1234F.",
+            )
+            if not pan_number:
+                self.add_error("pan_number", "Enter the PAN number.")
+            else:
+                try:
+                    validator(pan_number)
+                    cleaned_data["pan_number"] = pan_number
+                except ValidationError as error:
+                    self.add_error("pan_number", error)
+
+        if document_type == Document.TYPE_LICENSE:
+            if not cleaned_data.get("license_number"):
+                self.add_error("license_number", "Enter the licence number.")
+            if not cleaned_data.get("license_valid_until"):
+                self.add_error("license_valid_until", "Enter the licence expiry date.")
+
+        if document_type == Document.TYPE_RC:
+            if not cleaned_data.get("vehicle_registration_number"):
+                self.add_error("vehicle_registration_number", "Enter the vehicle registration number.")
+            if not cleaned_data.get("vehicle_model"):
+                self.add_error("vehicle_model", "Enter the vehicle model.")
+
+        return cleaned_data

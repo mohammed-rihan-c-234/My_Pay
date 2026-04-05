@@ -261,7 +261,8 @@ select {
 }
 
 .wallet-layout,
-.expenses-layout {
+.expenses-layout,
+.documents-layout {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 24px;
@@ -696,6 +697,20 @@ select:focus {
   gap: 12px;
 }
 
+.documents-list {
+  display: grid;
+  gap: 14px;
+}
+
+.document-fields-group {
+  display: none;
+  gap: 16px;
+}
+
+.document-fields-group.active {
+  display: grid;
+}
+
 .expense-item {
   display: flex;
   justify-content: space-between;
@@ -706,10 +721,177 @@ select:focus {
   background: rgba(255, 255, 255, 0.72);
 }
 
+.document-item {
+  display: grid;
+  grid-template-columns: minmax(0, 290px) minmax(0, 1fr) auto;
+  gap: 18px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.document-card {
+  position: relative;
+  min-height: 190px;
+  border-radius: 24px;
+  padding: 20px;
+  overflow: hidden;
+  color: #ffffff;
+  box-shadow: 0 22px 52px rgba(16, 17, 20, 0.22);
+}
+
+.document-card::before,
+.document-card::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.45;
+}
+
+.document-card::before {
+  width: 160px;
+  height: 160px;
+  right: -28px;
+  top: -36px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.document-card::after {
+  width: 100px;
+  height: 100px;
+  left: -14px;
+  bottom: -30px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.document-theme-saffron {
+  background: linear-gradient(145deg, #6b1f00 0%, #d97706 52%, #ffd166 100%);
+}
+
+.document-theme-midnight {
+  background: linear-gradient(145deg, #09111f 0%, #12375c 48%, #7dd3fc 100%);
+}
+
+.document-theme-emerald {
+  background: linear-gradient(145deg, #0e2f23 0%, #0f766e 48%, #6ee7b7 100%);
+}
+
+.document-theme-aurora {
+  background: linear-gradient(145deg, #24104d 0%, #4338ca 45%, #22d3ee 100%);
+}
+
+.document-theme-sunset {
+  background: linear-gradient(145deg, #4a1523 0%, #db2777 52%, #fda4af 100%);
+}
+
+.document-theme-royal {
+  background: linear-gradient(145deg, #1d1a4f 0%, #4338ca 45%, #c4b5fd 100%);
+}
+
+.document-card-top,
+.document-card-meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.document-chip,
+.document-theme-label {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.document-card-number {
+  position: relative;
+  z-index: 1;
+  margin: 34px 0 22px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  word-break: break-word;
+}
+
+.document-card-meta span,
+.document-card-footer {
+  opacity: 0.8;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.document-card-meta strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+}
+
+.document-card-footer {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+}
+
 .expense-item p {
   color: var(--muted);
   font-size: 0.92rem;
   margin-top: 6px;
+}
+
+.document-copy h4,
+.document-copy p {
+  margin: 0;
+}
+
+.document-copy p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-top: 8px;
+}
+
+.document-badge {
+  display: inline-flex;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.08);
+  color: var(--text);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.document-actions {
+  display: grid;
+  gap: 10px;
+  min-width: 110px;
+  align-content: start;
+}
+
+.document-actions form {
+  margin: 0;
+}
+
+.document-link {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+}
+
+.document-warning {
+  background: rgba(255, 245, 214, 0.72);
+  border: 1px solid rgba(214, 170, 43, 0.22);
 }
 
 .expense-amount {
@@ -837,7 +1019,8 @@ select:focus {
   .app-shell,
   .auth-shell,
   .wallet-layout,
-  .expenses-layout {
+  .expenses-layout,
+  .documents-layout {
     grid-template-columns: 1fr;
   }
 
@@ -869,9 +1052,14 @@ select:focus {
   }
 
   .list-heading,
-  .expense-item {
+  .expense-item,
+  .document-item {
     flex-direction: column;
     align-items: start;
+  }
+
+  .document-item {
+    grid-template-columns: 1fr;
   }
 
   .swipe-card:not(:first-child) {

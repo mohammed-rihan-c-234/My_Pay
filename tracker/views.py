@@ -8,8 +8,8 @@ from django.http import JsonResponse
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 
-from .forms import CardForm, ExpenseForm, SignInForm, SignUpForm
-from .models import Card, Expense
+from .forms import CardForm, DocumentForm, ExpenseForm, SignInForm, SignUpForm
+from .models import Card, Document, Expense
 
 
 def health_check(request):
@@ -83,6 +83,7 @@ def login_view(request):
 def dashboard(request):
     cards = Card.objects.filter(user=request.user)
     expenses = Expense.objects.filter(user=request.user).select_related("card")
+    documents = Document.objects.filter(user=request.user)
     debit_expenses = expenses.filter(transaction_type=Expense.TYPE_DEBIT)
     active_tab = "wallet"
     selected_card = None
@@ -90,6 +91,7 @@ def dashboard(request):
     reveal_error = None
     card_form = CardForm()
     expense_form = ExpenseForm(user=request.user)
+    document_form = DocumentForm()
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -160,6 +162,24 @@ def dashboard(request):
                 except (InvalidOperation, TypeError):
                     reveal_error = "Enter a valid balance amount."
                     revealed_card = selected_card
+        elif action == "add_document":
+            active_tab = "documents"
+            document_form = DocumentForm(request.POST)
+            if document_form.is_valid():
+                document = document_form.save(commit=False)
+                document.user = request.user
+                document.save()
+                messages.success(request, "Document card saved securely.")
+                return redirect("dashboard")
+        elif action == "delete_document":
+            active_tab = "documents"
+            document_id = request.POST.get("document_id")
+            document = documents.filter(id=document_id).first()
+            if document:
+                document.delete()
+                messages.success(request, "Document removed.")
+                return redirect("dashboard")
+            messages.error(request, "That document could not be found.")
 
     total_spent = debit_expenses.aggregate(total=Sum("amount"))["total"] or Decimal("0")
     category_totals = (
@@ -190,10 +210,13 @@ def dashboard(request):
         "summary_cards": summary_cards,
         "top_category": top_category,
         "saved_cards_count": cards.count(),
+        "saved_documents_count": documents.count(),
         "active_tab": active_tab,
         "selected_card": selected_card,
         "revealed_card": revealed_card,
         "reveal_error": reveal_error,
+        "documents": documents,
+        "document_form": document_form,
     }
     return render(request, "tracker/dashboard.html", context)
 

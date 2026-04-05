@@ -1,6 +1,5 @@
 const tabButtons = document.querySelectorAll(".tab-button");
-const walletPanel = document.getElementById("walletPanel");
-const expensesPanel = document.getElementById("expensesPanel");
+const panels = document.querySelectorAll(".panel");
 const swipeCards = document.querySelectorAll("[data-swipe-card]");
 const swipeWidth = 112;
 const cardDetailsModal = document.getElementById("cardDetailsModal");
@@ -10,17 +9,21 @@ const modalCardTitle = document.getElementById("modalCardTitle");
 const balanceEditButton = document.getElementById("balanceEditButton");
 const balanceEditForm = document.getElementById("balanceEditForm");
 const nfcLinks = document.querySelectorAll("[data-nfc-link]");
+const documentForm = document.querySelector("[data-document-form]");
+const documentTypeField = documentForm?.querySelector('select[name="document_type"]');
+const documentFieldGroups = documentForm?.querySelectorAll("[data-document-fields]");
 
 tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    const isWallet = button.dataset.tab === "wallet";
+    const activeTab = button.dataset.tab;
 
     tabButtons.forEach((item) => {
       item.classList.toggle("active", item === button);
     });
 
-    walletPanel.classList.toggle("active", isWallet);
-    expensesPanel.classList.toggle("active", !isWallet);
+    panels.forEach((panel) => {
+      panel.classList.toggle("active", panel.id === `${activeTab}Panel`);
+    });
   });
 });
 
@@ -163,6 +166,19 @@ nfcLinks.forEach((link) => {
     window.location.href = isIOS ? iosAppUrl || iosStoreUrl : appIntent;
   });
 });
+
+if (documentTypeField && documentFieldGroups) {
+  const syncDocumentFields = () => {
+    const activeType = documentTypeField.value;
+
+    documentFieldGroups.forEach((group) => {
+      group.classList.toggle("active", group.dataset.documentFields === activeType);
+    });
+  };
+
+  documentTypeField.addEventListener("change", syncDocumentFields);
+  syncDocumentFields();
+}
 
 document.addEventListener("pointerdown", (event) => {
   if (event.target.closest("[data-swipe-card]")) {

@@ -41,6 +41,7 @@
         <nav class="tabs" aria-label="Main sections">
           <button class="tab-button {% if active_tab == 'wallet' %}active{% endif %}" data-tab="wallet" type="button">Wallet</button>
           <button class="tab-button {% if active_tab == 'expenses' %}active{% endif %}" data-tab="expenses" type="button">Expenses</button>
+          <button class="tab-button {% if active_tab == 'documents' %}active{% endif %}" data-tab="documents" type="button">Documents</button>
         </nav>
 
         <section class="quick-stats">
@@ -61,6 +62,10 @@
           <div class="stat-card">
             <span>Saved cards</span>
             <strong>{{ saved_cards_count }} card{{ saved_cards_count|pluralize }}</strong>
+          </div>
+          <div class="stat-card">
+            <span>Saved documents</span>
+            <strong>{{ saved_documents_count }} file{{ saved_documents_count|pluralize }}</strong>
           </div>
         </section>
       </aside>
@@ -320,6 +325,189 @@
                     </div>
                   {% endfor %}
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel {% if active_tab == 'documents' %}active{% endif %}" id="documentsPanel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Secure vault</p>
+              <h2>Your Documents</h2>
+            </div>
+            <p class="section-copy">
+              Keep personal files like Aadhaar, licence, PAN, and RC grouped in one private place.
+            </p>
+          </div>
+
+          <div class="documents-layout">
+            <form class="glass-card form-card" method="post" data-document-form>
+              {% csrf_token %}
+              <input type="hidden" name="action" value="add_document" />
+              <h3>Create a Document Card</h3>
+              <label>
+                Document type
+                {{ document_form.document_type }}
+                {% for error in document_form.document_type.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <label>
+                Card theme
+                {{ document_form.theme }}
+                {% for error in document_form.theme.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <label>
+                Holder name
+                {{ document_form.holder_name }}
+                {% for error in document_form.holder_name.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <label>
+                Date of birth
+                {{ document_form.date_of_birth }}
+                {% for error in document_form.date_of_birth.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+
+              <div class="document-fields-group" data-document-fields="aadhaar">
+                <label>
+                  Aadhaar number
+                  {{ document_form.aadhaar_number }}
+                  {% for error in document_form.aadhaar_number.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+              </div>
+
+              <div class="document-fields-group" data-document-fields="pan">
+                <label>
+                  PAN number
+                  {{ document_form.pan_number }}
+                  {% for error in document_form.pan_number.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+              </div>
+
+              <div class="document-fields-group" data-document-fields="license">
+                <label>
+                  Licence number
+                  {{ document_form.license_number }}
+                  {% for error in document_form.license_number.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+                <label>
+                  Valid until
+                  {{ document_form.license_valid_until }}
+                  {% for error in document_form.license_valid_until.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+              </div>
+
+              <div class="document-fields-group" data-document-fields="rc">
+                <label>
+                  Registration number
+                  {{ document_form.vehicle_registration_number }}
+                  {% for error in document_form.vehicle_registration_number.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+                <label>
+                  Vehicle model
+                  {{ document_form.vehicle_model }}
+                  {% for error in document_form.vehicle_model.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+                <label>
+                  Issuing state
+                  {{ document_form.issuing_state }}
+                  {% for error in document_form.issuing_state.errors %}
+                    <span class="field-error">{{ error }}</span>
+                  {% endfor %}
+                </label>
+              </div>
+
+              <label>
+                Private note
+                {{ document_form.notes }}
+                {% for error in document_form.notes.errors %}
+                  <span class="field-error">{{ error }}</span>
+                {% endfor %}
+              </label>
+              <button type="submit" class="primary-button">Save document card</button>
+            </form>
+
+            <div class="dashboard-column">
+              <div class="glass-card list-card">
+                <div class="list-heading">
+                  <h3>Saved Document Cards</h3>
+                  <span class="field-help">Each card is private to your account.</span>
+                </div>
+                <div class="documents-list">
+                  {% for document in documents %}
+                    <article class="document-item">
+                      <article class="document-card document-theme-{{ document.theme }}">
+                        <div class="document-card-top">
+                          <span class="document-chip">{{ document.get_document_type_display }}</span>
+                          <span class="document-theme-label">{{ document.get_theme_display }}</span>
+                        </div>
+                        <div class="document-card-number">{{ document.masked_identifier|default:"Stored" }}</div>
+                        <div class="document-card-meta">
+                          <div>
+                            <span>Name</span>
+                            <strong>{{ document.holder_name }}</strong>
+                          </div>
+                          <div>
+                            <span>Type</span>
+                            <strong>{{ document.get_document_type_display }}</strong>
+                          </div>
+                        </div>
+                        <div class="document-card-footer">
+                          {% if document.document_type == 'license' %}
+                            <span>Valid till {{ document.license_valid_until|date:"M Y" }}</span>
+                          {% elif document.document_type == 'rc' %}
+                            <span>{{ document.vehicle_model }}{% if document.issuing_state %} · {{ document.issuing_state }}{% endif %}</span>
+                          {% elif document.date_of_birth %}
+                            <span>DOB {{ document.date_of_birth|date:"d M Y" }}</span>
+                          {% else %}
+                            <span>Added {{ document.created_at|date:"M j, Y" }}</span>
+                          {% endif %}
+                        </div>
+                      </article>
+                      <div class="document-copy">
+                        <h4>{{ document.holder_name }}</h4>
+                        <p>{{ document.primary_identifier }}</p>
+                        {% if document.notes %}
+                          <p>{{ document.notes }}</p>
+                        {% endif %}
+                      </div>
+                      <div class="document-actions">
+                        <form method="post">
+                          {% csrf_token %}
+                          <input type="hidden" name="action" value="delete_document" />
+                          <input type="hidden" name="document_id" value="{{ document.id }}" />
+                          <button type="submit" class="ghost-button">Delete</button>
+                        </form>
+                      </div>
+                    </article>
+                  {% empty %}
+                    <div class="empty-state">
+                      No document cards saved yet. Add one to build your vault.
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="empty-state document-warning">
+                Choose a theme that matches each document card so the vault feels easier to scan at a glance.
               </div>
             </div>
           </div>

@@ -455,7 +455,13 @@
                 <div class="documents-list">
                   {% for document in documents %}
                     <article class="document-item">
-                      <article class="document-card document-theme-{{ document.theme }}">
+                      <article
+                        class="document-card document-theme-{{ document.theme }}"
+                        data-document-surface
+                        data-document-id="{{ document.id }}"
+                        data-document-title="{{ document.get_document_type_display }}"
+                        data-document-holder="{{ document.holder_name }}"
+                      >
                         <div class="document-card-top">
                           <span class="document-chip">{{ document.get_document_type_display }}</span>
                           <span class="document-theme-label">{{ document.get_theme_display }}</span>
@@ -485,9 +491,9 @@
                       </article>
                       <div class="document-copy">
                         <h4>{{ document.holder_name }}</h4>
-                        <p>{{ document.primary_identifier }}</p>
+                        <p>Tap the card and enter your password to view full details.</p>
                         {% if document.notes %}
-                          <p>{{ document.notes }}</p>
+                          <p>Private note saved.</p>
                         {% endif %}
                       </div>
                       <div class="document-actions">
@@ -656,6 +662,146 @@
             <p class="field-help">
               CVV is not shown here because it is not stored after entry for security reasons.
             </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal-backdrop {% if selected_document or revealed_document %}visible{% endif %}"
+      id="documentDetailsModal"
+    >
+      <div class="details-modal">
+        <button type="button" class="modal-close" id="closeDocumentModal" aria-label="Close">
+          x
+        </button>
+        <div class="modal-header">
+          <p class="eyebrow">Protected document details</p>
+          <h3 id="modalDocumentTitle">
+            {% if selected_document or revealed_document %}
+              {{ revealed_document.get_document_type_display|default:selected_document.get_document_type_display }} details
+            {% else %}
+              Document details
+            {% endif %}
+          </h3>
+          <p class="section-copy">
+            Enter your sign-in password to unlock the full document view.
+          </p>
+        </div>
+
+        <form method="post" class="details-auth-form {% if revealed_document %}hidden{% endif %}" id="revealDocumentForm">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="reveal_document" />
+          <input
+            type="hidden"
+            name="document_id"
+            id="revealDocumentId"
+            value="{% if selected_document or revealed_document %}{{ revealed_document.id|default:selected_document.id }}{% endif %}"
+          />
+          <label>
+            Account password
+            <input
+              type="password"
+              name="account_password"
+              id="documentAccountPassword"
+              placeholder="Enter your sign-in password"
+              autocomplete="current-password"
+              required
+            />
+          </label>
+          {% if document_reveal_error %}
+            <span class="field-error">{{ document_reveal_error }}</span>
+          {% endif %}
+          <button type="submit" class="primary-button">Reveal details</button>
+        </form>
+
+        <div class="revealed-card-panel {% if not revealed_document %}hidden{% endif %}" id="revealedDocumentPanel">
+          {% if revealed_document %}
+            <article class="document-card document-card-large document-theme-{{ revealed_document.theme }}">
+              <div class="document-card-top">
+                <span class="document-chip">{{ revealed_document.get_document_type_display }}</span>
+                <span class="document-theme-label">{{ revealed_document.get_theme_display }}</span>
+              </div>
+              <div class="document-card-number">{{ revealed_document.primary_identifier|default:"Stored" }}</div>
+              <div class="document-card-meta">
+                <div>
+                  <span>Name</span>
+                  <strong>{{ revealed_document.holder_name }}</strong>
+                </div>
+                <div>
+                  <span>Type</span>
+                  <strong>{{ revealed_document.get_document_type_display }}</strong>
+                </div>
+              </div>
+              <div class="document-card-footer">
+                {% if revealed_document.document_type == 'license' %}
+                  <span>Valid till {{ revealed_document.license_valid_until|date:"d M Y" }}</span>
+                {% elif revealed_document.document_type == 'rc' %}
+                  <span>{{ revealed_document.vehicle_model }}{% if revealed_document.issuing_state %} · {{ revealed_document.issuing_state }}{% endif %}</span>
+                {% elif revealed_document.date_of_birth %}
+                  <span>DOB {{ revealed_document.date_of_birth|date:"d M Y" }}</span>
+                {% else %}
+                  <span>Saved securely</span>
+                {% endif %}
+              </div>
+            </article>
+            <div class="revealed-grid">
+              <div>
+                <span>Holder</span>
+                <strong>{{ revealed_document.holder_name }}</strong>
+              </div>
+              <div>
+                <span>Document type</span>
+                <strong>{{ revealed_document.get_document_type_display }}</strong>
+              </div>
+              {% if revealed_document.date_of_birth %}
+                <div>
+                  <span>Date of birth</span>
+                  <strong>{{ revealed_document.date_of_birth|date:"d M Y" }}</strong>
+                </div>
+              {% endif %}
+              {% if revealed_document.document_type == 'aadhaar' %}
+                <div>
+                  <span>Aadhaar number</span>
+                  <strong>{{ revealed_document.aadhaar_number }}</strong>
+                </div>
+              {% elif revealed_document.document_type == 'pan' %}
+                <div>
+                  <span>PAN number</span>
+                  <strong>{{ revealed_document.pan_number }}</strong>
+                </div>
+              {% elif revealed_document.document_type == 'license' %}
+                <div>
+                  <span>Licence number</span>
+                  <strong>{{ revealed_document.license_number }}</strong>
+                </div>
+                <div>
+                  <span>Valid until</span>
+                  <strong>{{ revealed_document.license_valid_until|date:"d M Y" }}</strong>
+                </div>
+              {% elif revealed_document.document_type == 'rc' %}
+                <div>
+                  <span>Registration number</span>
+                  <strong>{{ revealed_document.vehicle_registration_number }}</strong>
+                </div>
+                <div>
+                  <span>Vehicle model</span>
+                  <strong>{{ revealed_document.vehicle_model }}</strong>
+                </div>
+                {% if revealed_document.issuing_state %}
+                  <div>
+                    <span>Issuing state</span>
+                    <strong>{{ revealed_document.issuing_state }}</strong>
+                  </div>
+                {% endif %}
+              {% endif %}
+            </div>
+            {% if revealed_document.notes %}
+              <div class="secure-note-panel">
+                <span>Private note</span>
+                <strong>{{ revealed_document.notes }}</strong>
+              </div>
+            {% endif %}
           {% endif %}
         </div>
       </div>

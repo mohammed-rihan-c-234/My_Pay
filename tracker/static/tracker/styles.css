@@ -738,6 +738,8 @@ select:focus {
   overflow: hidden;
   color: #ffffff;
   box-shadow: 0 22px 52px rgba(16, 17, 20, 0.22);
+  cursor: pointer;
+  transition: transform 220ms ease, box-shadow 220ms ease;
 }
 
 .document-card::before,
@@ -839,6 +841,16 @@ select:focus {
   position: relative;
   z-index: 1;
   margin-top: 18px;
+}
+
+.document-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 28px 60px rgba(16, 17, 20, 0.26);
+}
+
+.document-card-large {
+  min-height: 230px;
+  cursor: default;
 }
 
 .expense-item p {

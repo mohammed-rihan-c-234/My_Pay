@@ -1,11 +1,16 @@
 const tabButtons = document.querySelectorAll(".tab-button");
 const panels = document.querySelectorAll(".panel");
 const swipeCards = document.querySelectorAll("[data-swipe-card]");
+const documentSurfaces = document.querySelectorAll("[data-document-surface]");
 const swipeWidth = 112;
 const cardDetailsModal = document.getElementById("cardDetailsModal");
 const closeCardModal = document.getElementById("closeCardModal");
 const revealCardId = document.getElementById("revealCardId");
 const modalCardTitle = document.getElementById("modalCardTitle");
+const documentDetailsModal = document.getElementById("documentDetailsModal");
+const closeDocumentModal = document.getElementById("closeDocumentModal");
+const revealDocumentId = document.getElementById("revealDocumentId");
+const modalDocumentTitle = document.getElementById("modalDocumentTitle");
 const balanceEditButton = document.getElementById("balanceEditButton");
 const balanceEditForm = document.getElementById("balanceEditForm");
 const nfcLinks = document.querySelectorAll("[data-nfc-link]");
@@ -115,9 +120,25 @@ function openCardModal(surface) {
   cardDetailsModal.classList.add("visible");
 }
 
+function openDocumentModal(surface) {
+  if (!documentDetailsModal) {
+    return;
+  }
+
+  revealDocumentId.value = surface.dataset.documentId || "";
+  modalDocumentTitle.textContent = `${surface.dataset.documentTitle || "Document"} details`;
+  documentDetailsModal.classList.add("visible");
+}
+
 if (closeCardModal) {
   closeCardModal.addEventListener("click", () => {
     cardDetailsModal.classList.remove("visible");
+  });
+}
+
+if (closeDocumentModal) {
+  closeDocumentModal.addEventListener("click", () => {
+    documentDetailsModal.classList.remove("visible");
   });
 }
 
@@ -125,6 +146,14 @@ if (cardDetailsModal) {
   cardDetailsModal.addEventListener("click", (event) => {
     if (event.target === cardDetailsModal) {
       cardDetailsModal.classList.remove("visible");
+    }
+  });
+}
+
+if (documentDetailsModal) {
+  documentDetailsModal.addEventListener("click", (event) => {
+    if (event.target === documentDetailsModal) {
+      documentDetailsModal.classList.remove("visible");
     }
   });
 }
@@ -179,6 +208,16 @@ if (documentTypeField && documentFieldGroups) {
   documentTypeField.addEventListener("change", syncDocumentFields);
   syncDocumentFields();
 }
+
+documentSurfaces.forEach((surface) => {
+  surface.addEventListener("click", (event) => {
+    if (event.target.closest("button, form, a")) {
+      return;
+    }
+
+    openDocumentModal(surface);
+  });
+});
 
 document.addEventListener("pointerdown", (event) => {
   if (event.target.closest("[data-swipe-card]")) {

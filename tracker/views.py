@@ -89,6 +89,9 @@ def dashboard(request):
     selected_card = None
     revealed_card = None
     reveal_error = None
+    selected_document = None
+    revealed_document = None
+    document_reveal_error = None
     card_form = CardForm()
     expense_form = ExpenseForm(user=request.user)
     document_form = DocumentForm()
@@ -171,6 +174,17 @@ def dashboard(request):
                 document.save()
                 messages.success(request, "Document card saved securely.")
                 return redirect("dashboard")
+        elif action == "reveal_document":
+            active_tab = "documents"
+            document_id = request.POST.get("document_id")
+            password = request.POST.get("account_password", "")
+            selected_document = documents.filter(id=document_id).first()
+            if not selected_document:
+                document_reveal_error = "That document could not be found."
+            elif not request.user.check_password(password):
+                document_reveal_error = "The password you entered is incorrect."
+            else:
+                revealed_document = selected_document
         elif action == "delete_document":
             active_tab = "documents"
             document_id = request.POST.get("document_id")
@@ -217,6 +231,9 @@ def dashboard(request):
         "reveal_error": reveal_error,
         "documents": documents,
         "document_form": document_form,
+        "selected_document": selected_document,
+        "revealed_document": revealed_document,
+        "document_reveal_error": document_reveal_error,
     }
     return render(request, "tracker/dashboard.html", context)
 

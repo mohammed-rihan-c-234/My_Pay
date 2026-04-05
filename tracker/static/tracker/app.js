@@ -1,7 +1,6 @@
 const tabButtons = document.querySelectorAll(".tab-button");
 const panels = document.querySelectorAll(".panel");
 const swipeCards = document.querySelectorAll("[data-swipe-card]");
-const documentSurfaces = document.querySelectorAll("[data-document-surface]");
 const swipeWidth = 112;
 const cardDetailsModal = document.getElementById("cardDetailsModal");
 const closeCardModal = document.getElementById("closeCardModal");
@@ -91,7 +90,11 @@ swipeCards.forEach((card) => {
     }
 
     if (!moved) {
-      openCardModal(surface);
+      if (surface.hasAttribute("data-document-surface")) {
+        openDocumentModal(surface);
+      } else {
+        openCardModal(surface);
+      }
     }
   });
 
@@ -208,16 +211,6 @@ if (documentTypeField && documentFieldGroups) {
   documentTypeField.addEventListener("change", syncDocumentFields);
   syncDocumentFields();
 }
-
-documentSurfaces.forEach((surface) => {
-  surface.addEventListener("click", (event) => {
-    if (event.target.closest("button, form, a")) {
-      return;
-    }
-
-    openDocumentModal(surface);
-  });
-});
 
 document.addEventListener("pointerdown", (event) => {
   if (event.target.closest("[data-swipe-card]")) {
